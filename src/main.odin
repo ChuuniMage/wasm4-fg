@@ -874,18 +874,28 @@ idle_anim_array: [4][32]u16be
 
 punch_5p_anim_array: [4][32]u16be
 punch_5p_anim_extra: [2][]u8
-punch_5p_anim_extra_heights: [2]u32
-punch_5p_anim_extra_widths: [2]u32
-punch_5p_anim_extra_offsets: [2]Point
+
 
 punch_2p_anim_array: [4][32]u16be
 
 punch_6p_anim_array: [5][32]u16be
 
 animationArrays: [Movelist][][32]u16be
-
+animDurationArrays: [Movelist][]int
+extraAnimArrays: #sparse [Movelist] proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags)
 
 DefaultPalette:[4]u32
+
+RunningAnimation :: struct {
+	counter:u8,
+	idx:u8,
+}
+
+AnimationFrameData :: struct {
+	frames:[][32]u16be,
+	durations:[]u32,
+}
+
 
 PlayerNumber :: enum {One, Two,}
 
@@ -929,165 +939,63 @@ debug_fg_note_display :: proc (fg_input:^[3]FG_Notation, player:^PlayerData) {
 	}
 }
 
-RunningAnimation :: struct {
-	counter:u8,
-	idx:u8,
-}
-
-AnimationFrameData :: struct {
-	frames:[][32]u16be,
-	durations:[]u32,
-}
-
-anim_idle_5 :: proc (using player:^PlayerData, anim_array:[][32]u16be) {
-	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
-
-	using player.current_anim
-	if player.previous_move != ._IDLE_5 {idx = 0}
-	counter += 1;
-	anim_idle_lengths := [4]int{30,30,30,5}
-	idle_anim_threshold := anim_idle_lengths[idx]
-
-	if (counter == idle_anim_threshold){
-		counter = 0
-		idx = idx == (len(anim_array) - 1) ? 0 : idx + 1
-	}
-
-	w4.blit(cast(^u8)(&anim_array[idx][0]), point.x, point.y, 16, 32, player_blit)
-}
-
-anim_walk_f :: proc (using player:^PlayerData, anim_array:[][32]u16be) {
-	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
-
-	using player.current_anim
-	if player.previous_move != ._MOVE_FORWARD {idx = 0}
-
-	counter += 1;
-	anim_walk_f_lengths := [4]int{7,7,7,7}
-	walk_f_anim_threshold := anim_walk_f_lengths[idx]
-	if (counter == walk_f_anim_threshold){
-		counter = 0
-		idx = idx == (len(anim_array) - 1) ? 0 : idx + 1
-	}
-
-	w4.blit(cast(^u8)(&anim_array[idx][0]), point.x, point.y, 16, 32, number == .Two ? {.FLIPX} : nil)
-}
-
-anim_walk_b :: proc (using player:^PlayerData, anim_array:[][32]u16be) {
-	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
-
-	using player.current_anim
-	if player.previous_move != ._MOVE_BACKWARD {idx = 0}
-	counter += 1;
-
-	anim_walk_b_lengths := [4]int{8,8,8,8}
-	walk_b_anim_threshold := anim_walk_b_lengths[idx]
-
-	if (counter == walk_b_anim_threshold){
-		counter = 0
-		idx = idx == (len(anim_array) - 1) ? 0 : idx + 1
-	}
-	w4.blit(cast(^u8)(&anim_array[idx][0]), point.x, point.y, 16, 32, player_blit)
-}
-
-anim_idle_2 :: proc (using player:^PlayerData, anim_array:[][32]u16be) {
-	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
-	w4.blit(cast(^u8)(&anim_array[0]), point.x, point.y, 16, 32, player_blit)
-}
-
-anim_5G :: proc (using player:^PlayerData, anim_array:[][32]u16be) {
-	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
-	w4.blit(cast(^u8)(&anim_array[0]), point.x, point.y, 16, 32, player_blit)
-}
-
-anim_2G :: proc (using player:^PlayerData, anim_array:[][32]u16be) {
-	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
-	w4.blit(cast(^u8)(&anim_array[0]), point.x, point.y, 16, 32, player_blit)
-}
-
-anim_5P :: proc (using player:^PlayerData, anim_array:[][32]u16be) {
-	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
-
-	using player.current_anim
-	counter += 1;
-	anim_5P_lengths := [4]int{5,6,7,9}
-	punch_anim_threshold := anim_5P_lengths[idx]
-
-	if (counter == punch_anim_threshold){
-		counter = 0
-		idx = idx == (len(anim_array) - 1) ? 0 : idx + 1
-	}
-	w4.blit(cast(^u8)&anim_array[idx][0], point.x, point.y, 16, 32, player_blit)
-
+anim_5P_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags) {
 	switch (idx){
 		case 1, 3: 
 			w4.blit(cast(^u8)&punch_5p_anim_extra[0][0], 
 				i32(point.x + (number == .One ? 16 : -2)), 
-				i32(punch_5p_anim_extra_offsets[0].y + point.y), 
-				punch_5p_anim_extra_widths[0], 
-				punch_5p_anim_extra_heights[0], player_blit)
+				i32(7 + point.y), 
+				2, 
+				5, player_blit)
 
 		case 2:
 			w4.blit(cast(^u8)&punch_5p_anim_extra[1][0], 
 				i32(point.x + (number == .One ? 16 : -5)), 
-				i32(punch_5p_anim_extra_offsets[1].y + point.y), 
-				punch_5p_anim_extra_widths[1], 
-				punch_5p_anim_extra_heights[1], player_blit)
+				i32(6 + point.y), 
+				5, 
+				4, player_blit)
 	}
+	
 }
 
-anim_2P :: proc (using player:^PlayerData, anim_array:[][32]u16be) {
-	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
-
-	using player.current_anim
-	counter += 1;
-	anim_2P_lengths := [4]int{5,6,6,16}
-	punch_2P_anim_threshold := anim_2P_lengths[idx]
-
-	if (counter == punch_2P_anim_threshold){
-		counter = 0
-		idx = idx == (len(anim_array) - 1) ? 0 : idx + 1
-	}
-
-	w4.blit(cast(^u8)&anim_array[idx][0], point.x, point.y, 16, 32, player_blit)
-
+anim_2P_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags) {
 	switch (idx){
 		case 2:
 			w4.blit(cast(^u8)&punch_5p_anim_extra[1][0], 
 				i32(point.x + (number == .Two ? -5 : 16)), 
 				i32(15 + point.y), 
-				punch_5p_anim_extra_widths[1], 
-				punch_5p_anim_extra_heights[1], player_blit + {.FLIPY})
+				5, 
+				4, player_blit + {.FLIPY})
 	}
 }
 
-anim_6P :: proc (using player:^PlayerData, anim_array:[][32]u16be) {
+anim_6P_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags) {
+	switch (idx){
+		case 2, 3:
+			w4.blit(cast(^u8)&elbow_1_extra[0], i32(point.x - (player.number == .One ? 5 : -16)), i32(point.y + 23), 5, 9, player_blit)
+	}
+}
+
+do_animation :: proc (using player:^PlayerData, 
+	anim_array:[][32]u16be, 
+	anim_durations:[]int, 
+	extra_anim:proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags)) 
+	{
 	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
 	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
 
 	using player.current_anim
-	anim_6P_lengths := [5]int{6, 7, 13, 6, 4}
-	punch_6P_anim_threshold := anim_6P_lengths[idx]
-	counter += 1
+	counter += 1;
+	anim_threshold := anim_durations[idx]
 
-	if (counter == punch_6P_anim_threshold){
+	if (counter == anim_threshold){
 		counter = 0
 		idx = idx == (len(anim_array) - 1) ? 0 : idx + 1
 	}
 
 	w4.blit(cast(^u8)&anim_array[idx][0], point.x, point.y, 16, 32, player_blit)
-
-	switch (idx){
-		case 2, 3:
-			w4.blit(cast(^u8)&elbow_1_extra[0], i32(point.x - (player.number == .One ? 5 : -16)), i32(point.y + 23), 5, 9, player_blit)
+	if(extra_anim != nil){
+		extra_anim(player, idx, player_blit)
 	}
 }
 
@@ -1163,8 +1071,6 @@ Movelist :: enum {
 	_2G,
 }
 
-MoveAnimations: [Movelist]proc(player:^PlayerData, anim_array:[][32]u16be)
-
 Point :: struct {
 	x:i32,
 	y:i32,
@@ -1173,6 +1079,7 @@ Point :: struct {
 PlayerAnimData :: struct {
 	counter:int,
 	idx:int,
+	anim_duration:u32,
 }
 
 PlayerData :: struct {
@@ -1183,7 +1090,6 @@ PlayerData :: struct {
 	current_anim:PlayerAnimData,
 	previous_move:Movelist,
 	current_move:Movelist,
-	anim_duration:u32,
 	buffered_move:Movelist,
 	current_colour:u32,
 }
@@ -1222,9 +1128,6 @@ start :: proc "c" () {
 
 	punch_5p_anim_array = [4][32]u16be{punch_0, punch_1, punch_2, punch_1}
 	punch_5p_anim_extra = [2][]u8{punch_1_extra, punch_2_extra}
-	punch_5p_anim_extra_heights = [2]u32{5,4}
-	punch_5p_anim_extra_widths = [2]u32{2,5}
-	punch_5p_anim_extra_offsets = [2]Point{{x = 16, y = 7,}, { x = 16, y = 6}}
 
 	punch_2p_anim_array = [4][32]u16be{crouch_punch_0, crouch_punch_1, crouch_punch_2, crouch_punch_1}
 	punch_6p_anim_array = [5][32]u16be{punch_0, elbow_0, elbow_1, elbow_2, elbow_3}
@@ -1292,6 +1195,11 @@ start :: proc "c" () {
 		._2P = atk_details_2P, 
 		._6P = atk_details_6P}
 
+	extraAnimArrays = #partial [Movelist] proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags) {
+		._5P = anim_5P_extra,
+		._2P = anim_2P_extra,
+		._6P = anim_6P_extra,
+	}
 
 	// using sprites
 	animationArrays = [Movelist][][32]u16be{
@@ -1306,18 +1214,24 @@ start :: proc "c" () {
 		._2G = {guard_crouch},
 	}
 
-	MoveAnimations = [Movelist]proc(player:^PlayerData, anim_array:[][32]u16be){
-		._5P = anim_5P, 
-		._2P = anim_2P, 
-		._6P = anim_6P,
-		._IDLE_5 = anim_idle_5, 
-		._IDLE_2 = anim_idle_2,
-		._MOVE_BACKWARD = anim_walk_b,
-		._MOVE_FORWARD = anim_walk_f,
-		._5G = anim_5G,
-		._2G = anim_2G,
-	}
+	anim_idle_lengths := [4]int{30,30,30,5}
+	anim_walk_f_lengths := [4]int{7,7,7,7}
+	anim_walk_b_lengths := [4]int{8,8,8,8}
+	anim_5P_lengths := [4]int{5,6,7,9}
+	anim_2P_lengths := [4]int{5,6,6,16}
+	anim_6P_lengths := [5]int{6,7,13,6,4}
 
+	animDurationArrays = [Movelist][]int{
+		._5P = anim_5P_lengths[:], 
+		._2P = anim_2P_lengths[:], 
+		._6P = anim_6P_lengths[:],
+		._IDLE_5 = anim_idle_lengths[:], 
+		._IDLE_2 = {2},
+		._MOVE_BACKWARD = anim_walk_b_lengths[:],
+		._MOVE_FORWARD = anim_walk_f_lengths[:],
+		._5G = {2},
+		._2G = {2},
+	}
 
 	for atk in &attack_array {
 		atk.total_duration = atk.startup + atk.active + atk.recovery
@@ -1325,24 +1239,22 @@ start :: proc "c" () {
 	p1_data = {
 		number = PlayerNumber.One,
 		point = {x = 18, y = 70},
-		current_anim = {0, 0},
+		current_anim = {0, 0, 1},
 		previous_move = ._IDLE_5,
 		buffered_move = ._IDLE_5,
 		stance = .Standing,
 		state = ._Idle,
-		anim_duration = 1,
 		current_colour = DefaultPalette[3],
 	}
 
 	p2_data = {
 		number = PlayerNumber.Two,
 		point = {x = 160-18, y = 70},
-		current_anim = {0, 0},
+		current_anim = {0, 0, 1},
 		previous_move = ._IDLE_5,
 		buffered_move = ._IDLE_5,
 		stance = .Standing,
 		state = ._Idle,
-		anim_duration = 1,
 		current_colour = DefaultPalette[3],
 	}
 	
@@ -1358,7 +1270,7 @@ advance_animation :: proc (using player:^PlayerData) {
 		using atk;
 		full_attack_length := startup + active + recovery
 		active_period := startup + active
-		current_attack_frame := full_attack_length - anim_duration 
+		current_attack_frame := full_attack_length - current_anim.anim_duration 
 
 		switch {
 			case current_attack_frame <= startup:
@@ -1369,14 +1281,14 @@ advance_animation :: proc (using player:^PlayerData) {
 				player.state = ._Recovery
 		}
 	}
-	if (anim_duration == 0){
+	if (current_anim.anim_duration  == 0){
 		player.state = ._Idle
 		update_idle_player_with_move(player)
 	} 
-	anim_duration = anim_duration - 1;
+	current_anim.anim_duration  -=  1;
 	w4.PALETTE[player.number == PlayerNumber.One ? 2 : 3] = StateColoursArray[player.state]
-	MoveAnimations[current_move](player, animationArrays[current_move])
-	w4.tracef("Anim duration: %f",  f64(anim_duration))
+	do_animation(player, animationArrays[current_move], animDurationArrays[current_move], extraAnimArrays[current_move])
+	w4.tracef("Anim duration: %f",  f64(current_anim.anim_duration ))
 }
 
 update_idle_player_with_move :: proc (using player:^PlayerData){
@@ -1387,7 +1299,7 @@ update_idle_player_with_move :: proc (using player:^PlayerData){
 		case ._MOVE_BACKWARD: 
 			stance = .Standing
 			state = ._Moving
-			anim_duration = 1
+			current_anim.anim_duration  = 1
 			if (previous_move == ._MOVE_BACKWARD){
 				w4.PALETTE[player.number == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
 				return
@@ -1395,7 +1307,7 @@ update_idle_player_with_move :: proc (using player:^PlayerData){
 		case ._MOVE_FORWARD: 
 			stance = .Standing
 			state = ._Moving
-			anim_duration = 2
+			current_anim.anim_duration  = 2
 			if (previous_move == ._MOVE_FORWARD){
 				w4.PALETTE[player.number == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
 				return
@@ -1403,7 +1315,7 @@ update_idle_player_with_move :: proc (using player:^PlayerData){
 		case ._IDLE_5: 
 			stance = .Standing
 			state = ._Idle
-			anim_duration = 2
+			current_anim.anim_duration  = 2
 			if (previous_move == ._IDLE_5){
 				w4.PALETTE[player.number == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
 				return
@@ -1411,19 +1323,19 @@ update_idle_player_with_move :: proc (using player:^PlayerData){
 		case ._IDLE_2: 
 			stance = .Crouching
 			state = ._Idle
-			anim_duration = 2
+			current_anim.anim_duration  = 2
 		case ._5P: 
 			stance = .Standing
 			state = ._Startup
-			anim_duration = attack_array[buffered_move].total_duration
+			current_anim.anim_duration  = attack_array[buffered_move].total_duration
 		case ._2P: 
 			stance = .Crouching
 			state = ._Startup
-			anim_duration = attack_array[buffered_move].total_duration
+			current_anim.anim_duration  = attack_array[buffered_move].total_duration
 		case ._6P: 
 			stance = .Standing
 			state = ._Startup
-			anim_duration = attack_array[buffered_move].total_duration
+			current_anim.anim_duration  = attack_array[buffered_move].total_duration
 		case ._5G: 
 			stance = .Standing
 			state = ._Blocking
@@ -1489,7 +1401,7 @@ apply_move_state :: proc (using player:^PlayerData) {
 	atk:AttackDetails = attack_array[current_move]
 	using atk;
 	full_attack_length := startup + active + recovery
-	current_attack_frame := full_attack_length - anim_duration 
+	current_attack_frame := full_attack_length - current_anim.anim_duration  
 
 	add_diff :=  proc(x:i32, diff:i32) -> i32{return x + diff}
 	sub_diff := proc(x:i32, diff:i32) -> i32 {return x - diff}
@@ -1506,20 +1418,17 @@ apply_move_state :: proc (using player:^PlayerData) {
 	#partial switch(current_move){
 		case ._MOVE_FORWARD: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 1)
 		case ._MOVE_BACKWARD: 
-			@static move_back_quad := 4
-			if (previous_move != ._MOVE_BACKWARD) {move_back_quad = 4}
-			switch {
-				case move_back_quad == 4: 
-					move_back_quad = 1
-				case: 
-					point.x = point.x == backward_screen_limit ? point.x :backward_offset(point.x, 1)
-					move_back_quad += 1
+			switch(player.current_anim.counter % 4) {
+				case 0: return
+				case: point.x = point.x == backward_screen_limit ? point.x :backward_offset(point.x, 1)
 			}
 		case ._6P: 
 			switch(current_attack_frame) {
 				case 3, 4, 5: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 1)
-				case 11, 12, 13: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 2)
-				case 14: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 3)
+				case 11, 12: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 2)
+				case 13: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 3)
+				case 14: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 4)
+				case full_attack_length - 5: point.x = point.x == forward_screen_limit ? point.x : backward_offset(point.x, 2)
 			}
 		case ._5P: 
 			switch(current_attack_frame) {
@@ -1534,7 +1443,7 @@ apply_move_state :: proc (using player:^PlayerData) {
 update :: proc "c" () {
 	context = runtime.default_context()
 	w4.DRAW_COLORS^ = 2 
-	w4.text("FG4 offset!", 10, 10)
+	w4.text("GenericAnim!", 10, 10)
 	fg_input_1:[3]FG_Notation = {._5,._NULL,._NULL}
 	fg_input_2:[3]FG_Notation = {._5,._NULL,._NULL}
 
