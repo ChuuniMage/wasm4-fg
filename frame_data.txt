@@ -3,7 +3,7 @@ vf "boxing" game
 5P|	i12, +1 active, 14 rec 	| +2, +5, +8
 2P|	i12, +0 active, 21 rec	| -5, +4, +7
 6P|	i14, +1 act, 21 rec	| -5, -2, +5
-4P|	i16, +2 act, 28 rec	| -8, +3, COMBO!
+2P|	i16, +2 act, 28 rec	| -8, +3, COMBO!
 
 G
 P+G| i10, +0 1ct, 24 rec | grd
