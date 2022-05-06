@@ -1106,8 +1106,7 @@ punch_5p_anim_data:AnimationFrameData
 start :: proc "c" () {
 	//Global stuff MUST be initialised here, or else will be null at runtime because wasm
 	context = runtime.default_context()
-
-
+	
 	
 	DEBUG_fg_note_to_rune_array = {
 		._1= '1',
@@ -1244,6 +1243,27 @@ start :: proc "c" () {
 	
 }
 
+Range :: struct {
+	start:u32,
+	end:u32,
+}
+
+//Ranges are from first frame relevant to last frame relevant, ie, 1-10 = 1 up-to-ten inclusive
+AttackDetailRanges :: struct {
+	startup:Range,
+	active:Range,
+	recovery:Range,
+}
+
+
+attack_ranges :: proc (atk:^AttackDetails) -> AttackDetailRanges{
+	new_ranges := AttackDetailRanges{
+		startup = {1,atk.startup},
+		active = {atk.startup + 1, atk.startup + atk.active},
+		recovery = {atk.startup + atk.active + 1, atk.startup + atk.active + atk.recovery},
+	}
+	return new_ranges
+}
 
 advance_animation :: proc (using player:^PlayerData) {
 	
@@ -1388,7 +1408,7 @@ InputCircularBuffer :: struct {
 }
 
 add_frame_input_to_buffer :: proc(input:^FG_Input, buffer:^InputCircularBuffer) {
-	if buffer.current_pos == MAX_INPUT_BUFFER_SIZE { buffer.current_pos = 0;}
+	if buffer.current_pos == MAX_INPUT_BUFFER_SIZE { buffer.current_pos = 0 }
 }
 
 resolve_push :: proc (players: ^[PlayerNumber]^PlayerData, accel_data:^AccelerationData) {
@@ -1471,7 +1491,7 @@ apply_accel :: proc (players: ^[PlayerNumber]^PlayerData, accel_data:^Accelerati
 	}
 
 	p1_pushbox_x_coord := players[.One].point.x + (players[.One].current_move == ._6P ? 12 : 16)
-	p2_pushbox_x_coord := players[.Two].point.x 
+	p2_pushbox_x_coord := players[.Two].point.x + (players[.Two].current_move == ._6P ? 5 : 0)
 
 	overlap := p2_pushbox_x_coord <= p1_pushbox_x_coord ? true : false
 	overlap_degree := p1_pushbox_x_coord - p2_pushbox_x_coord
@@ -1499,8 +1519,6 @@ apply_accel :: proc (players: ^[PlayerNumber]^PlayerData, accel_data:^Accelerati
 
 }
 
-
-
 Dimensions_2D :: struct {
 	w:u32,
 	h:u32,
@@ -1509,7 +1527,6 @@ Dimensions_2D :: struct {
 // Offsets defined from player 1 origin point, ie, top left corner of the sprite
 
 HitboxType :: enum {
-	_Pushbox,
 	_ActiveHitbox,
 	_Hurtbox,
 	_Blockbox,
@@ -1527,10 +1544,40 @@ stand_blockbox:Hitbox = {
 	dims = {16, 32},
 }
 
-stand_6P_hurtbox:Hitbox = {
+stand_6P_hurtbox_p1:Hitbox = {
 	type = ._Hurtbox,
 	pt = {0,0},
-	dims = {11, 32},
+	dims = {12, 32},
+}
+
+stand_6P_hitbox_p1:Hitbox = {
+	type = ._ActiveHitbox,
+	pt = {12,11},
+	dims = {5, 8},
+}
+
+stand_6P_elbow_hurtbox_p1:Hitbox = {
+	type = ._Hurtbox,
+	pt = {12,11},
+	dims = {5, 8},
+}
+
+stand_6P_hurtbox_p2:Hitbox = {
+	type = ._Hurtbox,
+	pt = {5,0},
+	dims = {12, 32},
+}
+
+stand_6P_hitbox_p2:Hitbox = {
+	type = ._ActiveHitbox,
+	pt = {-1,11},
+	dims = {6, 8},
+}
+
+stand_6P_elbow_hurtbox_p2:Hitbox = {
+	type = ._Hurtbox,
+	pt = {-1,11},
+	dims = {6, 8},
 }
 
 stand_chest_hurtbox:Hitbox = {
@@ -1539,16 +1586,11 @@ stand_chest_hurtbox:Hitbox = {
 	dims = {16, 18},
 }
 
-stand_pushbox:Hitbox = {
-	type = ._Pushbox,
-	pt = {0,0},
-	dims = {15, 32},
-}
 
 stand_full_hurtbox:Hitbox = {
 	type = ._Hurtbox,
 	pt = {0,0},
-	dims = {15, 32},
+	dims = {16, 32},
 }
 
 stand_legs_hurtbox:Hitbox = {
@@ -1569,48 +1611,77 @@ crouch_hurtbox:Hitbox = {
 	dims = {16, 23},
 }
 
-crouch_pushbox:Hitbox = {
-	type = ._Pushbox,
-	pt = {0,7},
-	dims = {16, 25},
-}
-
-punch_5P_hitbox:Hitbox = {
+punch_5P_hitbox_p1:Hitbox = {
 	type = ._ActiveHitbox,
 	pt = {16, 6},
 	dims = {5,4},
 }
 
-punch_5P_hurtbox:Hitbox = {
+punch_5P_hurtbox_p1:Hitbox = {
 	type = ._Hurtbox,
-	pt = {16, 6},
+	pt = {16, 5},
 	dims = {5,4},
 }
 
-punch_2P_hitbox:Hitbox = {
+punch_5P_hitbox_p2:Hitbox = {
 	type = ._ActiveHitbox,
-	pt = {16, 6},
+	pt = {-5, 5},
 	dims = {5,4},
 }
 
-punch_2P_hurtbox:Hitbox = {
+punch_5P_hurtbox_p2:Hitbox = {
+	type = ._Hurtbox,
+	pt = {-5, 5},
+	dims = {5,4},
+}
+
+punch_2P_hitbox_p1:Hitbox = {
+	type = ._ActiveHitbox,
+	pt = {16, 15},
+	dims = {5,4},
+}
+
+punch_2P_hurtbox_p1:Hitbox = {
 	type = ._Hurtbox,
 	pt = {16, 15},
 	dims = {5,4},
 }
 
-draw_hitbox :: proc (player:^PlayerData, hitbox:Hitbox){
-	w4.DRAW_COLORS^ = player.p_num == .One ? 0x30 : 0x40
-	using hitbox
-
-	w4.tracef("hitbox pt x %f", f64(player.point.x + pt.x))
-	w4.tracef("hitbox pt y %f", f64(player.point.y + pt.y))
-	w4.tracef("hitbox dim w %f", f64(dims.w))
-	w4.tracef("hitbox dim h %f", f64(dims.h))
-	w4.rect(player.point.x + pt.x, player.point.y + pt.y, dims.w, dims.h)
+punch_2P_hitbox_p2:Hitbox = {
+	type = ._ActiveHitbox,
+	pt = {-5, 15},
+	dims = {5,4},
 }
 
+punch_2P_hurtbox_p2:Hitbox = {
+	type = ._Hurtbox,
+	pt = {-5, 15},
+	dims = {5,4},
+}
 
+draw_hitbox :: proc (player:^PlayerData, hitbox:Hitbox, show_type: HitboxType = nil){
+	if(show_type != nil){
+		if (hitbox.type != show_type) {return}
+	}
+
+
+	w4.DRAW_COLORS^ = player.p_num == .One ? 0x31 : 0x41
+	using hitbox
+	w4.rect(player.point.x + pt.x, pt.y + player.point.y, dims.w, dims.h)
+
+}
+
+draw_hitbox_2 :: proc (player:^PlayerData, hitbox:Hitbox, show_type: HitboxType = nil){
+	if(show_type != nil){
+		if (hitbox.type != show_type) {return}
+	}
+
+
+	w4.DRAW_COLORS^ = player.p_num == .One ? 0x21 : 0x21
+	using hitbox
+	w4.rect(player.point.x + pt.x, pt.y + player.point.y, dims.w, dims.h)
+
+}
 
 apply_move_state :: proc (using player:^PlayerData, accel_data:^AccelerationData, hitbox_data:^HitboxData) {
 	atk:AttackDetails = attack_array[current_move]
@@ -1644,28 +1715,167 @@ apply_move_state :: proc (using player:^PlayerData, accel_data:^AccelerationData
 	using hitbox_data;
 	//Hurtboxes
 	switch(current_move){
-		case ._MOVE_FORWARD, ._MOVE_BACKWARD, ._5P: 
-			new_hitboxes := [1]Hitbox{stand_full_hurtbox}
-			hitboxes[p_num] = new_hitboxes[:]
-		case	._IDLE_5:
-			new_hitboxes := [1]Hitbox{stand_full_hurtbox}
-			hitboxes[p_num] = new_hitboxes[:]
-		case ._6P:
-			new_hitboxes := [1]Hitbox{stand_6P_hurtbox}
-			hitboxes[p_num] = new_hitboxes[:]
-		case ._IDLE_2, ._2P:
-			new_hitboxes := [1]Hitbox{crouch_hurtbox}
-			hitboxes[p_num] = new_hitboxes[:]
-		case ._5G:
-			new_hitboxes := [1]Hitbox{stand_blockbox}
-			hitboxes[p_num] = new_hitboxes[:]
-		case ._2G:
-			new_hitboxes := [1]Hitbox{crouch_blockbox}
-			hitboxes[p_num] = new_hitboxes[:]
+		case ._5P: 
+			ranges := attack_ranges(&attack_array[._5P])
+			switch(player.current_anim.idx){
+				case 0: hitboxes[p_num] = {stand_full_hurtbox}
+				case 1: hitboxes[p_num] = {stand_full_hurtbox}
+				case 2: 
+					fist_hurtbox := p_num == .One ? punch_5P_hurtbox_p1 : punch_5P_hurtbox_p2
+					fist_hitbox := p_num == .One ? punch_5P_hitbox_p1 : punch_5P_hitbox_p2
 
+					if(current_attack_frame > ranges.active.end){
+							hitboxes[p_num] = {stand_full_hurtbox, fist_hurtbox,}
+						} else {
+							hitboxes[p_num] = {stand_full_hurtbox, fist_hurtbox, fist_hitbox}
+						}
+				case 3: hitboxes[p_num] = {stand_full_hurtbox}
+				}
+		case ._MOVE_FORWARD: 
+			hitboxes[p_num] = {stand_full_hurtbox}
+		case ._MOVE_BACKWARD: 
+			hitboxes[p_num] = {stand_full_hurtbox}
+		case ._IDLE_5: 
+			hitboxes[p_num] = {stand_full_hurtbox}
+		case ._6P:
+			ranges := attack_ranges(&attack_array[._6P])
+			switch(player.current_anim.idx){
+				case 0: hitboxes[p_num] = {p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2 }
+				case 1: hitboxes[p_num] = {p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2 }
+				case 2: 
+					elbow_hurtbox := p_num == .One ? stand_6P_elbow_hurtbox_p1 : stand_6P_elbow_hurtbox_p2
+					elbow_hitbox := p_num == .One ? stand_6P_hitbox_p1 : stand_6P_hitbox_p2
+
+					if(current_attack_frame > ranges.active.end){
+							hitboxes[p_num] = {
+								p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2,
+								elbow_hurtbox,}
+						} else {
+							hitboxes[p_num] = {
+								p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2,
+								elbow_hurtbox, elbow_hitbox}
+						}
+				case 3: hitboxes[p_num] = {p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2, p_num == .One ? stand_6P_elbow_hurtbox_p1 : stand_6P_elbow_hurtbox_p2}
+				case 4: hitboxes[p_num] = {p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2 }
+			}
+		case ._IDLE_2:
+			hitboxes[p_num] = {crouch_hurtbox}
+		case ._2P:
+			ranges := attack_ranges(&attack_array[._2P])
+			switch(player.current_anim.idx){
+				case 0: hitboxes[p_num] = {crouch_hurtbox}
+				case 1: hitboxes[p_num] = {crouch_hurtbox}
+				case 2: 
+					fist_hurtbox := p_num == .One ? punch_2P_hurtbox_p1 : punch_2P_hurtbox_p2
+					fist_hitbox := p_num == .One ? punch_2P_hitbox_p1 : punch_2P_hitbox_p2
+
+					if(current_attack_frame > ranges.active.end){
+							hitboxes[p_num] = {crouch_hurtbox, fist_hurtbox,}
+						} else {
+							hitboxes[p_num] = {crouch_hurtbox, fist_hurtbox, fist_hitbox,}
+						}
+
+				case 3: hitboxes[p_num] = {crouch_hurtbox}
+			}
+		case ._5G:
+			hitboxes[p_num] = {stand_blockbox}
+		case ._2G:
+			hitboxes[p_num] = {crouch_blockbox}
 	}
 
 }
+import "core:reflect"
+
+resolve_hitboxes :: proc (players: ^[PlayerNumber]^PlayerData, hitbox_data:^HitboxData) {
+	MaybeHitbox :: union {
+		Hitbox,
+	}
+	actives:[PlayerNumber]MaybeHitbox = { .One = nil, .Two = nil}
+	hurtboxes:[PlayerNumber][2]MaybeHitbox = {.One = {nil, nil}, .Two = {nil, nil}}
+	blockboxes:[PlayerNumber]MaybeHitbox = {.One = nil, .Two = nil}
+
+	for player in players {
+		hurtbox_idx := 0
+		for hitbox in hitbox_data.hitboxes[player.p_num]{
+			if(player.p_num == .One && player.current_move == ._5P){
+				w4.tracef("Tracking 5P, length of hitboxes slice -> %f", f64(len(hitbox_data.hitboxes[player.p_num])))
+				if(hitbox.type == ._ActiveHitbox){
+					w4.tracef("AOOOOGA ACTIVE HITBOX A")
+				}
+				if(hitbox.type == ._Hurtbox){
+					w4.tracef("AOOOOGA HURTBOX B")
+				}
+				if(hitbox.type == ._Blockbox){
+					w4.tracef("AOOOOGA BLOCK C")
+				}
+				// if(hitbox.type == ._Pushbox){
+				// 	w4.tracef("AOOOOGA PUSH D")
+				// }
+			}
+			#partial switch(hitbox.type){
+				case ._ActiveHitbox: actives[player.p_num] = hitbox
+				case ._Blockbox: blockboxes[player.p_num] = hitbox
+				case ._Hurtbox: hurtboxes[player.p_num][hurtbox_idx] = hitbox; hurtbox_idx += 1
+			}
+		}
+	}
+
+	if(actives[.One] == nil && actives[.Two] == nil){
+		if(players[.One].current_move == ._5P){
+			w4.tracef("On dur %f skipping punch", f64(players[.One].current_anim.anim_duration))
+		}
+		return
+	}
+	
+	attack_hit:[PlayerNumber]bool = {.One = false, .Two = false}
+	attack_blocked:[PlayerNumber]bool = {.One = false, .Two = false}
+
+	get_furthest_hitbox_x_point := proc (player:^PlayerData,hitbox:^Hitbox) -> i32 {
+		return player.point.x + hitbox.pt.x + i32(player.p_num == .One ? i32(hitbox.dims.w) : 0 )   }
+
+	for player_atking in players {
+
+
+		attack_x_point: i32
+		if(actives[player_atking.p_num] != nil){
+			attack_x_point = get_furthest_hitbox_x_point(player_atking, cast(^Hitbox)&actives[player_atking.p_num])
+		} else {
+			continue
+		}
+		defending_pnum:PlayerNumber = player_atking.p_num == .One ? .Two : .One
+		if (blockboxes[defending_pnum] != nil){
+			_blockbox:Hitbox = blockboxes[defending_pnum].(Hitbox)
+			blockbox_x_point := get_furthest_hitbox_x_point(players[defending_pnum], &_blockbox)
+			intersect := player_atking.p_num == .One ? blockbox_x_point <= attack_x_point : attack_x_point <= blockbox_x_point
+			switch(player_atking.p_num){
+				case .One: attack_blocked[player_atking.p_num] = blockbox_x_point <= attack_x_point
+				case .Two: attack_blocked[player_atking.p_num] = attack_x_point <= blockbox_x_point
+			}
+			w4.tracef("blockbox x: %f , hitbox x: %f intersect: %x", f64(blockbox_x_point), f64(attack_x_point), intersect)
+		}
+		
+
+		for hurtbox in hurtboxes[defending_pnum] {
+			if(hurtbox != nil){
+				_hurtbox:Hitbox = hurtbox.(Hitbox)
+				hurtbox_x_point := get_furthest_hitbox_x_point(players[defending_pnum], &_hurtbox)
+				switch(player_atking.p_num){
+					case .One: attack_hit[player_atking.p_num] = hurtbox_x_point <= attack_x_point
+					case .Two: attack_hit[player_atking.p_num] = attack_x_point <= hurtbox_x_point
+				}
+			}
+		}
+		
+	}
+
+	switch {
+		case attack_hit[.One] == true: w4.text("p1 attack hit!", 18, 26)
+		case attack_hit[.Two] == true: w4.text("p2 attack hit!", 18, 26)
+		case attack_blocked[.One] == true: w4.text("p1 attack block!", 18, 26)
+		case attack_blocked[.Two] == true: w4.text("p2 attack block!", 18, 26)
+	}
+}
+
 
 @export
 update :: proc "c" () {
@@ -1700,13 +1910,15 @@ update :: proc "c" () {
 		apply_move_state(player, &accel_data, &hitbox_data)
 		advance_animation(player)
 	}
-	apply_accel(&player_ptrs, &accel_data)
+
 	for player in player_ptrs {
 		for x in hitbox_data.hitboxes[player.p_num] {
-			draw_hitbox(player, x)
+			draw_hitbox(player, x, ._ActiveHitbox)
+			draw_hitbox_2(player, x, ._Hurtbox)
 		}
 	}
-
+	apply_accel(&player_ptrs, &accel_data)
+	resolve_hitboxes(&player_ptrs, &hitbox_data)
 	draw_rects()
 	// draw_hitbox(.One, {0,0},{3,4})
 }

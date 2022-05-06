@@ -6,4 +6,4 @@ vf "boxing" game
 3P|	i16, +2 act, 28 rec		| -8, +3, COMBO!|	
 
 G
-P+G| i10, +0 1ct, 24 rec | grd
+P+G| i10, +0 1ct, 24 rec | grdsss
