@@ -12,7 +12,6 @@ idle_stand_0 := [32]u16be {
 	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
-	0b0000111110000000,
 	0b0000011110000000,
 	0b0000011100000000,
 	0b0011111110000000,
@@ -34,6 +33,7 @@ idle_stand_0 := [32]u16be {
 	0b0011110000111100,
 	0b0111100000011100,
 	0b0111100000011100,
+	0b0111100000011100,
 	0b0111100000111100,
 	0b0111000000111000,
 	0b1111000001111000,
@@ -44,7 +44,6 @@ idle_stand_0 := [32]u16be {
 
 idle_stand_1 := [32]u16be {
 	0b0000011100000000,
-	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
@@ -69,6 +68,7 @@ idle_stand_1 := [32]u16be {
 	0b0011110000111100,
 	0b0111100000011100,
 	0b0111100000011100,
+	0b0111100000011100,
 	0b0111100000111100,
 	0b0111000000111000,
 	0b1111000001111000,
@@ -79,7 +79,6 @@ idle_stand_1 := [32]u16be {
 
 idle_stand_2 := [32]u16be {
 	0b0000011100000000,
-	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
@@ -104,6 +103,7 @@ idle_stand_2 := [32]u16be {
 	0b0011110000111100,
 	0b0111100000011100,
 	0b0111100000011100,
+	0b0111100000011100,
 	0b0111100000111100,
 	0b0111000000111000,
 	0b1111000001111000,
@@ -114,7 +114,6 @@ idle_stand_2 := [32]u16be {
 
 idle_stand_3 := [32]u16be {
 	0b0000011100000000,
-	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
@@ -139,6 +138,7 @@ idle_stand_3 := [32]u16be {
 	0b0011110000111100,
 	0b0111100000011100,
 	0b0111100000011100,
+	0b0111100000011100,
 	0b0111100000111100,
 	0b0111000000111000,
 	0b1111000001111000,
@@ -146,6 +146,7 @@ idle_stand_3 := [32]u16be {
 	0b1111100001111110,
 	0b1111100001111110,
 }
+
 
 idle_crouch_0 := [32]u16be {
 	0b0000000000000000,
@@ -155,8 +156,9 @@ idle_crouch_0 := [32]u16be {
 	0b0000000000000000,
 	0b0000000000000000,
 	0b0000000000000000,
+	0b0000000000000000,
+	0b0000000000000000,
 	0b0000001110000000,
-	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
@@ -170,10 +172,9 @@ idle_crouch_0 := [32]u16be {
 	0b0110111111111110,
 	0b0111011000011100,
 	0b0111100111000000,
-	0b0011111111000000,
-	0b0001111111011000,
-	0b0000000000111110,
-	0b0000111111111111,
+	0b0011111111011000,
+	0b0001111111011110,
+	0b0000000000111111,
 	0b0111011110001111,
 	0b0111111110011111,
 	0b1111111110011110,
@@ -184,7 +185,6 @@ idle_crouch_0 := [32]u16be {
 
 f_walk_0 := [32]u16be {
 	0b0000011100000000,
-	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
@@ -209,6 +209,7 @@ f_walk_0 := [32]u16be {
 	0b0000111000111100,
 	0b0000111000011100,
 	0b0000111000011100,
+	0b0000111000011100,
 	0b0000111000111100,
 	0b0000111000111000,
 	0b0001111001111000,
@@ -219,7 +220,6 @@ f_walk_0 := [32]u16be {
 
 f_walk_1 := [32]u16be {
 	0b0000011100000000,
-	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
@@ -246,15 +246,15 @@ f_walk_1 := [32]u16be {
 	0b0000111000011110,
 	0b0000111000011100,
 	0b0000111000111100,
+	0b0000111000111111,
 	0b0001111000111111,
-	0b0001111000111111,
+	0b0001111000000000,
 	0b0001111100000000,
 	0b0001111100000000,
 }
 
 f_walk_2 := [32]u16be {
 	0b0000011100000000,
-	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
@@ -279,6 +279,7 @@ f_walk_2 := [32]u16be {
 	0b0001111000011110,
 	0b0011110000001110,
 	0b0011110000001110,
+	0b0011110000001110,
 	0b0011110000011110,
 	0b0011100000011100,
 	0b0111100000111100,
@@ -289,7 +290,6 @@ f_walk_2 := [32]u16be {
 
 b_walk_1 := [32]u16be {
 	0b0000011100000000,
-	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
@@ -315,6 +315,7 @@ b_walk_1 := [32]u16be {
 	0b0001110000011100,
 	0b0001110000011100,
 	0b0001110000011100,
+	0b0001110000011100,
 	0b0011110000011100,
 	0b0011110000111100,
 	0b0011111000111100,
@@ -324,7 +325,6 @@ b_walk_1 := [32]u16be {
 
 punch_0 := [32]u16be {
 	0b0000001110000000,
-	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
@@ -349,6 +349,7 @@ punch_0 := [32]u16be {
 	0b0011110000111100,
 	0b0111100000011100,
 	0b0111100000011100,
+	0b0111100000011100,
 	0b0111100000111100,
 	0b0111000000111000,
 	0b1111000001111000,
@@ -360,7 +361,6 @@ punch_0 := [32]u16be {
 
 punch_1 := [32]u16be {
 	0b0000001110000000,
-	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
@@ -385,6 +385,7 @@ punch_1 := [32]u16be {
 	0b0011111000011110,
 	0b0011110000001110,
 	0b0011110000001110,
+	0b0011110000001110,
 	0b0111100000011110,
 	0b0111100000011100,
 	0b0111100000111100,
@@ -400,7 +401,6 @@ punch_1_extra := []u8{
 
 punch_2 := [32]u16be {
 	0b0000001110000000,
-	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
@@ -423,6 +423,7 @@ punch_2 := [32]u16be {
 	0b0001111001111100,
 	0b0001111000111110,
 	0b0011111000011110,
+	0b0011110000001110,
 	0b0011110000001110,
 	0b0011110000001110,
 	0b0111100000011110,
@@ -449,8 +450,9 @@ crouch_punch_0 := [32]u16be {
 	0b0000000000000000,
 	0b0000000000000000,
 	0b0000000000000000,
+	0b0000000000000000,
+	0b0000000000000000,
 	0b0000001110000000,
-	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
@@ -464,10 +466,9 @@ crouch_punch_0 := [32]u16be {
 	0b0011101000011100,
 	0b0011110111000000,
 	0b0001111111000000,
-	0b0000111111011000,
-	0b0000000000111110,
-	0b0000111111111111,
-	0b0111011110001111,
+	0b0000111111011110,
+	0b0000000000111111,
+	0b0111011110111111,
 	0b0111111110011111,
 	0b1111111110011110,
 	0b1110111110111100,
@@ -484,8 +485,8 @@ crouch_punch_1 := [32]u16be {
 	0b0000000000000000,
 	0b0000000000000000,
 	0b0000000000000000,
+	0b0000000000000000,
 	0b0000000011100000,
-	0b0000000111110000,
 	0b0000000111110000,
 	0b0000000111110000,
 	0b0000000111110000,
@@ -502,7 +503,7 @@ crouch_punch_1 := [32]u16be {
 	0b0000110111111000,
 	0b0000111011110110,
 	0b0000111100001111,
-	0b0111011110001111,
+	0b0111011110011111,
 	0b0111111110011111,
 	0b1111111110011110,
 	0b1110111110111100,
@@ -519,8 +520,8 @@ crouch_punch_2 := [32]u16be {
 	0b0000000000000000,
 	0b0000000000000000,
 	0b0000000000000000,
+	0b0000000000000000,
 	0b0000000011100000,
-	0b0000000111110000,
 	0b0000000111110000,
 	0b0000000111110000,
 	0b0000000111110000,
@@ -536,8 +537,8 @@ crouch_punch_2 := [32]u16be {
 	0b0000111111110000,
 	0b0000111111111000,
 	0b0000111111111110,
-	0b0000111111011111,
-	0b0111011111001111,
+	0b0000111111111111,
+	0b0111011111011111,
 	0b0111111110011111,
 	0b1111111110011110,
 	0b1110111110111100,
@@ -548,7 +549,6 @@ crouch_punch_2 := [32]u16be {
 elbow_0 := [32]u16be {
 	0b0000000000000000,
 	0b0000000111000000,
-	0b0000001111100000,
 	0b0000001111100000,
 	0b0000001111100000,
 	0b0000001111100000,
@@ -572,6 +572,7 @@ elbow_0 := [32]u16be {
 	0b0011110000111100,
 	0b0111100000011100,
 	0b0111100000011100,
+	0b0111100000011100,
 	0b0111100000111100,
 	0b0111000000111000,
 	0b1111000001111000,
@@ -586,8 +587,8 @@ elbow_1 := [32]u16be {
 	0b0000000000000000,
 	0b0000000000000000,
 	0b0000000000000000,
+	0b0000000000000000,
 	0b0000000111000000,
-	0b0000001111100000,
 	0b0000001111100000,
 	0b0000001111100000,
 	0b0000001111100000,
@@ -630,8 +631,8 @@ elbow_2 := [32]u16be {
 	0b0000000000000000,
 	0b0000000000000000,
 	0b0000000000000000,
+	0b0000000000000000,
 	0b0000000111000000,
-	0b0000001111100000,
 	0b0000001111100000,
 	0b0000001111100000,
 	0b0000001111100000,
@@ -665,7 +666,6 @@ elbow_3 := [32]u16be {
 	0b0000001111100000,
 	0b0000001111100000,
 	0b0000001111100000,
-	0b0000001111100000,
 	0b0000000111100000,
 	0b0000000111000000,
 	0b0000111111100000,
@@ -685,6 +685,7 @@ elbow_3 := [32]u16be {
 	0b0011110000111100,
 	0b0111100000011100,
 	0b0111100000011100,
+	0b0111100000011100,
 	0b0111100000111100,
 	0b0111000000111000,
 	0b1111000001111000,
@@ -695,7 +696,6 @@ elbow_3 := [32]u16be {
 
 guard_stand := [32]u16be {
 	0b0000011100000000,
-	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
 	0b0000111110000000,
@@ -720,6 +720,7 @@ guard_stand := [32]u16be {
 	0b0011110000111100,
 	0b0111100000011100,
 	0b0111100000011100,
+	0b0111100000011100,
 	0b0111100000111100,
 	0b0111000000111000,
 	0b1111000001111000,
@@ -736,8 +737,9 @@ guard_crouch := [32]u16be {
 	0b0000000000000000,
 	0b0000000000000000,
 	0b0000000000000000,
+	0b0000000000000000,
+	0b0000000000000000,
 	0b0000001110000000,
-	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
 	0b0000011111000000,
@@ -753,7 +755,6 @@ guard_crouch := [32]u16be {
 	0b0011111111000000,
 	0b0001111111000000,
 	0b0000000000111000,
-	0b0000111111111110,
 	0b0000111111111111,
 	0b0111011110001111,
 	0b0111111110011111,
@@ -765,7 +766,6 @@ guard_crouch := [32]u16be {
 
 hitstun_stand_high := [32]u16be {
 	0b0001110000000000,
-	0b0011111000000000,
 	0b0011111000000000,
 	0b0011111000000000,
 	0b0011111000000000,
@@ -788,6 +788,7 @@ hitstun_stand_high := [32]u16be {
 	0b0001111001111100,
 	0b0001111000111100,
 	0b0001110000011100,
+	0b0011110000011100,
 	0b0011110000011100,
 	0b0011110000011100,
 	0b0011100000011100,
@@ -841,8 +842,9 @@ hitstun_crouch := [32]u16be {
 	0b0000000000000000,
 	0b0000000000000000,
 	0b0000000000000000,
+	0b0000000000000000,
+	0b0000000000000000,
 	0b0001110000000000,
-	0b0011111000000000,
 	0b0011111000000000,
 	0b0011111000000000,
 	0b0011111000000000,
@@ -859,7 +861,6 @@ hitstun_crouch := [32]u16be {
 	0b0011111110000000,
 	0b0001111110110000,
 	0b0000000001111110,
-	0b0000111111111111,
 	0b0111011110001111,
 	0b0111111110011111,
 	0b1111111110011110,
@@ -874,13 +875,10 @@ idle_anim_array: [4][32]u16be
 
 punch_5p_anim_array: [4][32]u16be
 punch_5p_anim_extra: [2][]u8
-
-
 punch_2p_anim_array: [4][32]u16be
-
 punch_6p_anim_array: [5][32]u16be
 
-animationArrays: [Movelist][][32]u16be
+animFrameArrays: [Movelist][][32]u16be
 animDurationArrays: [Movelist][]int
 extraAnimArrays: #sparse [Movelist] proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags)
 
@@ -930,7 +928,7 @@ DEBUG_fg_note_to_rune_array:[FG_Notation]rune
 
 debug_fg_note_display :: proc (fg_input:^[3]FG_Notation, player:^PlayerData) {
 	w4.DRAW_COLORS^ = 2
-	offset:i32 = player.number == PlayerNumber.One ? 0 : 80
+	offset:i32 = player.p_num == PlayerNumber.One ? 0 : 80
 
 	for input, idx in fg_input {
 		bs, w := utf8.encode_rune(DEBUG_fg_note_to_rune_array[fg_input[idx]])
@@ -942,16 +940,16 @@ debug_fg_note_display :: proc (fg_input:^[3]FG_Notation, player:^PlayerData) {
 anim_5P_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags) {
 	switch (idx){
 		case 1, 3: 
-			w4.blit(cast(^u8)&punch_5p_anim_extra[0][0], 
-				i32(point.x + (number == .One ? 16 : -2)), 
-				i32(7 + point.y), 
+			w4.blit(cast(^u8)&punch_1_extra[0], 
+				i32(point.x + (p_num == .One ? 16 : -2)), 
+				i32(6 + point.y), 
 				2, 
 				5, player_blit)
 
 		case 2:
-			w4.blit(cast(^u8)&punch_5p_anim_extra[1][0], 
-				i32(point.x + (number == .One ? 16 : -5)), 
-				i32(6 + point.y), 
+			w4.blit(cast(^u8)&punch_2_extra[0], 
+				i32(point.x + (p_num == .One ? 16 : -5)), 
+				i32(5 + point.y), 
 				5, 
 				4, player_blit)
 	}
@@ -961,8 +959,8 @@ anim_5P_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Fl
 anim_2P_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags) {
 	switch (idx){
 		case 2:
-			w4.blit(cast(^u8)&punch_5p_anim_extra[1][0], 
-				i32(point.x + (number == .Two ? -5 : 16)), 
+			w4.blit(cast(^u8)&punch_2_extra[0], 
+				i32(point.x + (p_num == .Two ? -5 : 16)), 
 				i32(15 + point.y), 
 				5, 
 				4, player_blit + {.FLIPY})
@@ -972,7 +970,7 @@ anim_2P_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Fl
 anim_6P_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags) {
 	switch (idx){
 		case 2, 3:
-			w4.blit(cast(^u8)&elbow_1_extra[0], i32(point.x - (player.number == .One ? 5 : -16)), i32(point.y + 23), 5, 9, player_blit)
+			w4.blit(cast(^u8)&elbow_1_extra[0], i32(point.x - (player.p_num == .One ? 5 : -16)), i32(point.y + 23), 5, 9, player_blit)
 	}
 }
 
@@ -981,8 +979,8 @@ do_animation :: proc (using player:^PlayerData,
 	anim_durations:[]int, 
 	extra_anim:proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags)) 
 	{
-	player_blit:w4.Blit_Flags = number == .Two ? {.FLIPX} : nil
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 0x30 : 0x40
+	player_blit:w4.Blit_Flags = p_num == .Two ? {.FLIPX} : nil
+	w4.DRAW_COLORS^ = p_num == PlayerNumber.One ? 0x30 : 0x40
 
 	using player.current_anim
 	counter += 1;
@@ -1034,7 +1032,8 @@ PlayerState :: enum {
 	_Recovery,
 	_Startup,
 	_Moving,
-		// Throwing,
+	_Blockstun,
+	_Hitstun,
 }
 
 AttackLevel :: enum {
@@ -1083,7 +1082,7 @@ PlayerAnimData :: struct {
 }
 
 PlayerData :: struct {
-	number:PlayerNumber,
+	p_num:PlayerNumber,
 	point:Point,
 	stance:PlayerStance,
 	state:PlayerState,
@@ -1108,30 +1107,8 @@ start :: proc "c" () {
 	//Global stuff MUST be initialised here, or else will be null at runtime because wasm
 	context = runtime.default_context()
 
-	idle_anim_array = {idle_stand_0, idle_stand_1, idle_stand_2, idle_stand_3}
-	idle_anim_data = {
-		frames = {idle_stand_0, idle_stand_1, idle_stand_2, idle_stand_3},
-		durations = {8,8,8,8},
-	}
 
-	walk_f_anim_array = {f_walk_0, f_walk_1, f_walk_2, idle_stand_0}
-	walk_f_anim_data = {
-		frames = {f_walk_0, f_walk_1, f_walk_2, idle_stand_0},
-		durations = {8,8,8,8},
-	}
-
-	walk_b_anim_array = {f_walk_0, b_walk_1, f_walk_2, idle_stand_0}
-	walk_b_anim_data = {
-		frames = {f_walk_0, b_walk_1, f_walk_2, idle_stand_0},
-		durations = {7,7,7,7},
-	}
-
-	punch_5p_anim_array = [4][32]u16be{punch_0, punch_1, punch_2, punch_1}
-	punch_5p_anim_extra = [2][]u8{punch_1_extra, punch_2_extra}
-
-	punch_2p_anim_array = [4][32]u16be{crouch_punch_0, crouch_punch_1, crouch_punch_2, crouch_punch_1}
-	punch_6p_anim_array = [5][32]u16be{punch_0, elbow_0, elbow_1, elbow_2, elbow_3}
-
+	
 	DEBUG_fg_note_to_rune_array = {
 		._1= '1',
 		._2= '2',
@@ -1146,8 +1123,7 @@ start :: proc "c" () {
 		._G= 'G',
 		._NULL= ' ',
 	}
-	//0 = foreground, 1 = background, 2 = p1, 3 = p2
-	//TODO: set global consts for foreground, background, p1, p2 indices for palette
+
 	DefaultPalette = {0xe0f8cf, 0x86c06c, 0x306850, 0x071821}
 	StateColoursArray = {
 		._Idle = 0x306850,
@@ -1156,6 +1132,8 @@ start :: proc "c" () {
 		._Recovery = 0x393ed4,
 		._Blocking = 0x20bed6,
 		._Moving = 0x32a848,
+		._Blockstun = 0x0b6eb5,
+		._Hitstun = 0xff00e1,
 	}
 
 	atk_details_5P:AttackDetails = {
@@ -1201,8 +1179,14 @@ start :: proc "c" () {
 		._6P = anim_6P_extra,
 	}
 
-	// using sprites
-	animationArrays = [Movelist][][32]u16be{
+	idle_anim_array = {idle_stand_0, idle_stand_1, idle_stand_2, idle_stand_3}
+	walk_f_anim_array = {f_walk_0, f_walk_1, f_walk_2, idle_stand_0}
+	walk_b_anim_array = {f_walk_0, b_walk_1, f_walk_2, idle_stand_0}
+	punch_5p_anim_array = {punch_0, punch_1, punch_2, punch_1}
+	punch_2p_anim_array = {crouch_punch_0, crouch_punch_1, crouch_punch_2, crouch_punch_1}
+	punch_6p_anim_array = {punch_0, elbow_0, elbow_1, elbow_2, elbow_3}
+
+	animFrameArrays = [Movelist][][32]u16be{
 		._5P = punch_5p_anim_array[:], 
 		._2P = punch_2p_anim_array[:], 
 		._6P = punch_6p_anim_array[:],
@@ -1237,7 +1221,7 @@ start :: proc "c" () {
 		atk.total_duration = atk.startup + atk.active + atk.recovery
 	}
 	p1_data = {
-		number = PlayerNumber.One,
+		p_num = PlayerNumber.One,
 		point = {x = 18, y = 70},
 		current_anim = {0, 0, 1},
 		previous_move = ._IDLE_5,
@@ -1248,7 +1232,7 @@ start :: proc "c" () {
 	}
 
 	p2_data = {
-		number = PlayerNumber.Two,
+		p_num = PlayerNumber.Two,
 		point = {x = 160-18, y = 70},
 		current_anim = {0, 0, 1},
 		previous_move = ._IDLE_5,
@@ -1263,7 +1247,7 @@ start :: proc "c" () {
 
 advance_animation :: proc (using player:^PlayerData) {
 	
-	w4.DRAW_COLORS^ = player.number == PlayerNumber.One ? 3 : 4 // Set the player colour to be drawn
+	w4.DRAW_COLORS^ = player.p_num == PlayerNumber.One ? 3 : 4 // Set the player colour to be drawn
 	if(state != ._Idle && state != ._Moving && state != ._Blocking){
 		
 		atk:AttackDetails = attack_array[current_move]
@@ -1286,8 +1270,8 @@ advance_animation :: proc (using player:^PlayerData) {
 		update_idle_player_with_move(player)
 	} 
 	current_anim.anim_duration  -=  1;
-	w4.PALETTE[player.number == PlayerNumber.One ? 2 : 3] = StateColoursArray[player.state]
-	do_animation(player, animationArrays[current_move], animDurationArrays[current_move], extraAnimArrays[current_move])
+	w4.PALETTE[player.p_num == PlayerNumber.One ? 2 : 3] = StateColoursArray[player.state]
+	do_animation(player, animFrameArrays[current_move], animDurationArrays[current_move], extraAnimArrays[current_move])
 	w4.tracef("Anim duration: %f",  f64(current_anim.anim_duration ))
 }
 
@@ -1301,7 +1285,7 @@ update_idle_player_with_move :: proc (using player:^PlayerData){
 			state = ._Moving
 			current_anim.anim_duration  = 1
 			if (previous_move == ._MOVE_BACKWARD){
-				w4.PALETTE[player.number == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
+				w4.PALETTE[player.p_num == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
 				return
 			}
 		case ._MOVE_FORWARD: 
@@ -1309,7 +1293,7 @@ update_idle_player_with_move :: proc (using player:^PlayerData){
 			state = ._Moving
 			current_anim.anim_duration  = 2
 			if (previous_move == ._MOVE_FORWARD){
-				w4.PALETTE[player.number == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
+				w4.PALETTE[player.p_num == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
 				return
 			}
 		case ._IDLE_5: 
@@ -1317,7 +1301,7 @@ update_idle_player_with_move :: proc (using player:^PlayerData){
 			state = ._Idle
 			current_anim.anim_duration  = 2
 			if (previous_move == ._IDLE_5){
-				w4.PALETTE[player.number == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
+				w4.PALETTE[player.p_num == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
 				return
 			}
 		case ._IDLE_2: 
@@ -1339,13 +1323,23 @@ update_idle_player_with_move :: proc (using player:^PlayerData){
 		case ._5G: 
 			stance = .Standing
 			state = ._Blocking
+			current_anim.anim_duration = 2
+			if (previous_move == ._5G){
+				w4.PALETTE[player.p_num == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
+				return
+			}
 		case ._2G: 
 			stance = .Crouching
 			state = ._Blocking
+			current_anim.anim_duration = 2
+			if (previous_move == ._2G){
+				w4.PALETTE[player.p_num == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
+				return
+			}
 	}
+	w4.PALETTE[player.p_num == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
 	player.current_anim.counter = 0
 	player.current_anim.idx = 0
-	w4.PALETTE[player.number == PlayerNumber.One ? 2 : 3] = StateColoursArray[state]
 }
 
 fg_notation_to_move :: proc (fg_input: ^[3]FG_Notation) ->  Movelist {
@@ -1397,46 +1391,280 @@ add_frame_input_to_buffer :: proc(input:^FG_Input, buffer:^InputCircularBuffer) 
 	if buffer.current_pos == MAX_INPUT_BUFFER_SIZE { buffer.current_pos = 0;}
 }
 
-apply_move_state :: proc (using player:^PlayerData) {
+resolve_push :: proc (players: ^[PlayerNumber]^PlayerData, accel_data:^AccelerationData) {
+	using accel_data
+	p1_advancing := accel[.One] > 0
+	p2_advancing := accel[.Two] > 0
+
+	if(!p1_advancing && !p2_advancing){
+		w4.trace("NOT ADVANCING")
+		return}
+	if(accel[.One] == accel[.Two]){
+		accel[.One] = 0
+		accel[.Two] = 0
+		return
+	}
+
+	@static counter := 0;
+	push_threshold := 3
+	p1vel := accel[.One] - accel[.Two]
+	p2vel := accel[.Two] - accel[.One]
+
+	advancing_player := p1_advancing ? players[.One] : players[.Two]
+	retreating_player := p2_advancing ? players[.One] : players[.Two]
+	
+	advancing_player_vel := p1_advancing ? p1vel : p2vel
+	retreating_player_vel := p2_advancing ? p1vel : p2vel
+	if (last_frame_pushbox_overlapping == false){
+		counter = 0;
+	}
+	delta := advancing_player_vel - retreating_player_vel
+	accel[advancing_player.p_num] = 0
+	accel[retreating_player.p_num] = 0
+	
+	if(players[.One].current_move == ._6P){
+		w4.tracef("6P BEING DONE")
+	}
+	
+	for delta > 0 {
+		w4.tracef("tracking push delta -> %f", f64(delta))
+		delta -= 1
+		counter += 1
+		if(counter == push_threshold){
+			accel[advancing_player.p_num] += 1
+			accel[retreating_player.p_num] -= 1
+			counter = 0
+		}
+	}
+
+}
+
+L_SCREEN_LIMIT :: 0
+R_SCREEN_LIMIT :: 160 - 16
+
+forward_offset :: proc(using player:^PlayerData, diff:i32) -> i32 {
+	forward_screen_limit:i32 = player.p_num == .One ? R_SCREEN_LIMIT : L_SCREEN_LIMIT
+	if(point.x == forward_screen_limit){return point.x}
+	return p_num == .One ? point.x + diff : point.x - diff
+}
+
+backward_offset :: proc(using player:^PlayerData, diff:i32) -> i32 {
+	backward_screen_limit:i32 = player.p_num == .One ? L_SCREEN_LIMIT : R_SCREEN_LIMIT
+	if(point.x == backward_screen_limit){return point.x}
+	return p_num == .One ? point.x - diff : point.x + diff
+}
+
+AccelerationData :: struct {
+	accel:[PlayerNumber]i32,
+	last_frame_pushbox_overlapping:bool,
+	current_frame_pushbox_overlapping:bool,
+}
+
+HitboxData :: struct {
+	hitboxes:[PlayerNumber][]Hitbox,
+}
+
+apply_accel :: proc (players: ^[PlayerNumber]^PlayerData, accel_data:^AccelerationData) {
+	defer {
+		accel_data.accel[.One] = 0
+		accel_data.accel[.Two] = 0
+	}
+
+	p1_pushbox_x_coord := players[.One].point.x + (players[.One].current_move == ._6P ? 12 : 16)
+	p2_pushbox_x_coord := players[.Two].point.x 
+
+	overlap := p2_pushbox_x_coord <= p1_pushbox_x_coord ? true : false
+	overlap_degree := p1_pushbox_x_coord - p2_pushbox_x_coord
+	if(overlap){
+		resolve_push(players, accel_data)
+		accel_data.last_frame_pushbox_overlapping = true
+		
+	} else {
+		accel_data.last_frame_pushbox_overlapping = false
+	}
+
+	if(overlap_degree > 0){
+		overlap_offset := overlap_degree / 2
+		for ; overlap_offset > 0; overlap_offset -= 1 {
+			for player in players {
+				player.point.x = backward_offset(player, 1)
+			}
+		}
+	}
+
+	for player in players {
+		offset := accel_data.accel[player.p_num] 
+		player.point.x = offset > 0 ? forward_offset(player, offset) : backward_offset(player, offset * -1)
+	}
+
+}
+
+
+
+Dimensions_2D :: struct {
+	w:u32,
+	h:u32,
+}
+
+// Offsets defined from player 1 origin point, ie, top left corner of the sprite
+
+HitboxType :: enum {
+	_Pushbox,
+	_ActiveHitbox,
+	_Hurtbox,
+	_Blockbox,
+}
+
+Hitbox :: struct {
+	type:HitboxType,
+	pt:Point,
+	dims:Dimensions_2D,
+}
+
+stand_blockbox:Hitbox = {
+	type = ._Blockbox,
+	pt = {0,0},
+	dims = {16, 32},
+}
+
+stand_6P_hurtbox:Hitbox = {
+	type = ._Hurtbox,
+	pt = {0,0},
+	dims = {11, 32},
+}
+
+stand_chest_hurtbox:Hitbox = {
+	type = ._Hurtbox,
+	pt = {0,0},
+	dims = {16, 18},
+}
+
+stand_pushbox:Hitbox = {
+	type = ._Pushbox,
+	pt = {0,0},
+	dims = {15, 32},
+}
+
+stand_full_hurtbox:Hitbox = {
+	type = ._Hurtbox,
+	pt = {0,0},
+	dims = {15, 32},
+}
+
+stand_legs_hurtbox:Hitbox = {
+	type = ._Hurtbox,
+	pt = {0,18},
+	dims = {15, 14},
+}
+
+crouch_blockbox:Hitbox = {
+	type = ._Blockbox,
+	pt = {0,9},
+	dims = {16, 23},
+}
+
+crouch_hurtbox:Hitbox = {
+	type = ._Hurtbox,
+	pt = {0,9},
+	dims = {16, 23},
+}
+
+crouch_pushbox:Hitbox = {
+	type = ._Pushbox,
+	pt = {0,7},
+	dims = {16, 25},
+}
+
+punch_5P_hitbox:Hitbox = {
+	type = ._ActiveHitbox,
+	pt = {16, 6},
+	dims = {5,4},
+}
+
+punch_5P_hurtbox:Hitbox = {
+	type = ._Hurtbox,
+	pt = {16, 6},
+	dims = {5,4},
+}
+
+punch_2P_hitbox:Hitbox = {
+	type = ._ActiveHitbox,
+	pt = {16, 6},
+	dims = {5,4},
+}
+
+punch_2P_hurtbox:Hitbox = {
+	type = ._Hurtbox,
+	pt = {16, 15},
+	dims = {5,4},
+}
+
+draw_hitbox :: proc (player:^PlayerData, hitbox:Hitbox){
+	w4.DRAW_COLORS^ = player.p_num == .One ? 0x30 : 0x40
+	using hitbox
+
+	w4.tracef("hitbox pt x %f", f64(player.point.x + pt.x))
+	w4.tracef("hitbox pt y %f", f64(player.point.y + pt.y))
+	w4.tracef("hitbox dim w %f", f64(dims.w))
+	w4.tracef("hitbox dim h %f", f64(dims.h))
+	w4.rect(player.point.x + pt.x, player.point.y + pt.y, dims.w, dims.h)
+}
+
+
+
+apply_move_state :: proc (using player:^PlayerData, accel_data:^AccelerationData, hitbox_data:^HitboxData) {
 	atk:AttackDetails = attack_array[current_move]
 	using atk;
 	full_attack_length := startup + active + recovery
 	current_attack_frame := full_attack_length - current_anim.anim_duration  
 
-	add_diff :=  proc(x:i32, diff:i32) -> i32{return x + diff}
-	sub_diff := proc(x:i32, diff:i32) -> i32 {return x - diff}
-
-	forward_offset := player.number == .One ? add_diff : sub_diff
-	backward_offset := player.number == .One ? sub_diff : add_diff 
-
-	L_screen_limit :i32 = 0
-	R_screen_limit :i32 = 160 - 16
-
-	forward_screen_limit := player.number == .One ? R_screen_limit : L_screen_limit
-	backward_screen_limit := player.number == .One ? L_screen_limit : R_screen_limit
-
+	using accel_data;
 	#partial switch(current_move){
-		case ._MOVE_FORWARD: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 1)
+		case ._MOVE_FORWARD: accel[p_num] = 1
 		case ._MOVE_BACKWARD: 
 			switch(player.current_anim.counter % 4) {
 				case 0: return
-				case: point.x = point.x == backward_screen_limit ? point.x :backward_offset(point.x, 1)
+				case: accel[p_num] = -1
 			}
 		case ._6P: 
 			switch(current_attack_frame) {
-				case 3, 4, 5: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 1)
-				case 11, 12: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 2)
-				case 13: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 3)
-				case 14: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 4)
-				case full_attack_length - 5: point.x = point.x == forward_screen_limit ? point.x : backward_offset(point.x, 2)
+				case 4, 5, 10, 11: accel[p_num] = 1
+				case 12: accel[p_num] = 2
+				case 13: accel[p_num] = 3
+				case 14: accel[p_num] = 4
+				case full_attack_length - 5:  accel[p_num] = - 3
 			}
 		case ._5P: 
 			switch(current_attack_frame) {
-				case 8, 12: point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 1)
-				case 10, 11 : point.x = point.x == forward_screen_limit ? point.x : forward_offset(point.x, 2)
+				case 8, 12: accel[p_num] = 1
+				case 10, 11: accel[p_num] = 2
 			}
-		
 	}
+
+	using hitbox_data;
+	//Hurtboxes
+	switch(current_move){
+		case ._MOVE_FORWARD, ._MOVE_BACKWARD, ._5P: 
+			new_hitboxes := [1]Hitbox{stand_full_hurtbox}
+			hitboxes[p_num] = new_hitboxes[:]
+		case	._IDLE_5:
+			new_hitboxes := [1]Hitbox{stand_full_hurtbox}
+			hitboxes[p_num] = new_hitboxes[:]
+		case ._6P:
+			new_hitboxes := [1]Hitbox{stand_6P_hurtbox}
+			hitboxes[p_num] = new_hitboxes[:]
+		case ._IDLE_2, ._2P:
+			new_hitboxes := [1]Hitbox{crouch_hurtbox}
+			hitboxes[p_num] = new_hitboxes[:]
+		case ._5G:
+			new_hitboxes := [1]Hitbox{stand_blockbox}
+			hitboxes[p_num] = new_hitboxes[:]
+		case ._2G:
+			new_hitboxes := [1]Hitbox{crouch_blockbox}
+			hitboxes[p_num] = new_hitboxes[:]
+
+	}
+
 }
 
 @export
@@ -1447,19 +1675,38 @@ update :: proc "c" () {
 	fg_input_1:[3]FG_Notation = {._5,._NULL,._NULL}
 	fg_input_2:[3]FG_Notation = {._5,._NULL,._NULL}
 
-	input_ptrs := [2]^[3]FG_Notation{&fg_input_1, &fg_input_2}
-	player_ptrs := [2]^PlayerData{&p1_data, &p2_data}
+	input_ptrs := [PlayerNumber]^[3]FG_Notation{ .One = &fg_input_1, .Two = &fg_input_2}
+	player_ptrs := [PlayerNumber]^PlayerData{.One = &p1_data, .Two = &p2_data}
+
+
+	@static hitbox_data:HitboxData = {{.One = {}, .Two = {}}}
+
+
+	@static accel_data:AccelerationData = {
+		{.One = 0, .Two = 0},
+		false,
+		false,
+	}
 
 	for player, idx in player_ptrs {
-		buttons_to_fg_notation_set(player.number == .One ? w4.GAMEPAD1^ : w4.GAMEPAD2^, input_ptrs[idx], player.number)
-		debug_fg_note_display(input_ptrs[idx], player)
-		player.buffered_move = fg_notation_to_move(input_ptrs[idx])
-		if(player.state == ._Idle || player.state == ._Blocking){
+		using player
+		playerGamepad := player.p_num == .One ? w4.GAMEPAD1^ : w4.GAMEPAD2^
+		buttons_to_fg_notation_set(playerGamepad, input_ptrs[p_num], p_num)
+		debug_fg_note_display(input_ptrs[p_num], player)
+		buffered_move = fg_notation_to_move(input_ptrs[p_num])
+		if(player.state == ._Idle){
 			update_idle_player_with_move(player)
 		}
-		apply_move_state(player)
+		apply_move_state(player, &accel_data, &hitbox_data)
 		advance_animation(player)
 	}
-	// Resolve conflicts 
+	apply_accel(&player_ptrs, &accel_data)
+	for player in player_ptrs {
+		for x in hitbox_data.hitboxes[player.p_num] {
+			draw_hitbox(player, x)
+		}
+	}
+
 	draw_rects()
+	// draw_hitbox(.One, {0,0},{3,4})
 }
