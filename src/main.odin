@@ -245,7 +245,7 @@ f_walk_1 := [32]u16be {
 	0b0001111111100000,
 	0b0001111111110000,
 	0b0001111111111000,
-	0b0001111101111100,
+	0b0001111001111100,
 	0b0000111000111110,
 	0b0000111000011110,
 	0b0000111000001110,
@@ -795,8 +795,8 @@ guard_crouch := [32]u16be {
 	0b0111011000011100,
 	0b0111100111000000,
 	0b0011111111000000,
-	0b0001111111000000,
-	0b0000000000111000,
+	0b0001111111011000,
+	0b0000000000111110,
 	0b0000111111111111,
 	0b0111011110001111,
 	0b0111111110011111,
@@ -982,6 +982,111 @@ stance_transition := [32]u16be {
 	0b1111100011111000,
 }
 
+stance_transition_guard := [32]u16be {
+	0b0000000000000000,
+	0b0000000000000000,
+	0b0000000000000000,
+	0b0000011100000000,
+	0b0000111110000000,
+	0b0000111110000000,
+	0b0000111110000000,
+	0b0000011110011110,
+	0b0000011100011110,
+	0b0001111110011110,
+	0b0011111111001110,
+	0b0111111111101110,
+	0b0110111111111110,
+	0b0110111111111110,
+	0b0110111111111100,
+	0b0111011000011000,
+	0b0111100111000000,
+	0b0011111111000000,
+	0b0001111111000000,
+	0b0000000000000000,
+	0b0011111111100000,
+	0b0011110111110000,
+	0b0011110011111000,
+	0b0011110001111000,
+	0b0011100001111000,
+	0b0111100001111000,
+	0b0111000011110000,
+	0b0111000011100000,
+	0b1111000111100000,
+	0b1111000111110000,
+	0b1111100111111000,
+	0b1111100011111000,
+}
+
+throw_startup_0 := [32]u16be {
+	0b0000011100000000,
+	0b0000111110000000,
+	0b0000111110000000,
+	0b0000111110000000,
+	0b0000011110000000,
+	0b0000011100000000,
+	0b0001111111111000,
+	0b0011111011110111,
+	0b0011111100000111,
+	0b0001111111111111,
+	0b0001110111111110,
+	0b0001111001111000,
+	0b0001111110000000,
+	0b0001111111000000,
+	0b0001111111000000,
+	0b0001111111000000,
+	0b0001111111000000,
+	0b0001111111100000,
+	0b0001111111100000,
+	0b0011111111110000,
+	0b0011110011111000,
+	0b0011110001111100,
+	0b0011110000111100,
+	0b0111100000011100,
+	0b0111100000011100,
+	0b0111100000011100,
+	0b0111100000111100,
+	0b0111000000111000,
+	0b1111000001111000,
+	0b1111000001111000,
+	0b1111100001111110,
+	0b1111100001111110,
+}
+
+throw_hit := [32]u16be {
+	0b0000011100000000,
+	0b0000111110000000,
+	0b0000111110000000,
+	0b0000111110000000,
+	0b0000011110000000,
+	0b0000011100000000,
+	0b0001111111111111,
+	0b0011111111111000,
+	0b0011111011110111,
+	0b0011111100000111,
+	0b0001111111111111,
+	0b0001110111111110,
+	0b0001111001111000,
+	0b0001111110000000,
+	0b0001111111111111,
+	0b0001111111111111,
+	0b0001111111111111,
+	0b0000111111101111,
+	0b0000000000001111,
+	0b0000000011011110,
+	0b0000000010111100,
+	0b0000000001111000,
+	0b0000000011110000,
+	0b0000000011110000,
+	0b0000000011111000,
+	0b0000001101111000,
+	0b0000001110000000,
+	0b0000011110000000,
+	0b0000011100000000,
+	0b0000111100000000,
+	0b0000111111000000,
+	0b0000111111000000,
+}
+
 walk_f_anim_array: [4][32]u16be
 walk_b_anim_array : [4][32]u16be 
 idle_anim_array: [4][32]u16be 
@@ -1057,6 +1162,14 @@ anim_6P_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Fl
 	}
 }
 
+anim_throw_extra :: proc (using player:^PlayerData, idx:int, player_blit:w4.Blit_Flags) {
+	w4.DRAW_COLORS^ = p_num == PlayerNumber.One ? 0x33 : 0x44
+	switch (idx){
+		case 1:
+			w4.rect(point.x + (p_num == .One ? 17 : -4), 6 + point.y, 3, 3)
+	}
+}
+
 do_animation :: proc (using player:^PlayerData, 
 	anim_array:[][32]u16be, 
 	anim_durations:[]int, 
@@ -1064,23 +1177,14 @@ do_animation :: proc (using player:^PlayerData,
 	{
 	player_blit:w4.Blit_Flags = p_num == .Two ? {.FLIPX} : nil
 	w4.DRAW_COLORS^ = p_num == PlayerNumber.One ? 0x30 : 0x40
-
-	
 	using player.current_anim
+
 	counter += 1;
 	anim_threshold := anim_durations[idx]
 
-	if(player.current_move == ._5Throw){
-		w4.tracef("Anim array length: %f", f64(len(anim_array)))
-		w4.tracef("Anim duration length: %f", f64(len(anim_durations)))
-		w4.tracef("idx: %f", f64(idx))
-		w4.tracef("Anim threshold: %f", f64(anim_durations[idx]))
-		w4.tracef("Throw status %x", player.maybe_throw_status == ._Success)
-	}
-
 	if (counter >= anim_threshold){
 		counter = 0
-		idx = idx == (len(anim_array) - 1) ? 0 : idx + 1
+		idx = idx == (len(anim_durations) - 1) ? 0 : idx + 1
 	}
 	w4.blit(cast(^u8)&anim_array[idx][0], point.x, point.y, 16, 32, player_blit)
 	if(extra_anim != nil){
@@ -1173,7 +1277,7 @@ AttackLevel :: enum {
 
 ThrowStatus :: enum {
 	_Success,
-	_Fail,
+	_Breaking,
 }
 
 Movelist :: enum {
@@ -1233,7 +1337,9 @@ AttackDetails :: struct {
 	recovery:u32,
 	hitstun:u32,
 	blockstun:u32,
-	ch_bonus:u32,
+	ch_bonus_hitstun:u32,
+	damage:i8,
+	ch_bonus_damage:i8,
 	stand_hitstun_type: HitstunType,
 	crouch_hitstun_type: HitstunType,
 	stand_blockstun_type: BlockstunType,
@@ -1315,6 +1421,12 @@ throw_default_array : [3][32]u16be
 throw_hit_duration_array : [4]int
 throw_hit_duration_slice : []int
 
+throw_break_array : [2][32]u16be
+throw_break_slice: [][32]u16be
+
+throw_break_duration : [2]int
+throw_break_duration_slice:[]int
+
 @export
 start :: proc "c" () {
 	//Global stuff MUST be initialised here, or else will be null at runtime because wasm
@@ -1324,6 +1436,8 @@ start :: proc "c" () {
 
 	throw_hit_duration_slice = throw_hit_duration_array[:]
 	
+
+
 	fg_input_1 = {._5,._NULL,._NULL}
 	fg_input_2 = {._5,._NULL,._NULL}
 
@@ -1381,7 +1495,9 @@ start :: proc "c" () {
 		recovery = 24,
 		hitstun = 26,
 		blockstun = 0,
-		ch_bonus = 0,
+		ch_bonus_hitstun = 0,
+		damage = 2,
+		ch_bonus_damage = 0,
 		stand_hitstun_type = ._Standing_MidGut,
 		crouch_hitstun_type = ._Crouching,
 		stand_blockstun_type = ._Standing,
@@ -1395,7 +1511,9 @@ start :: proc "c" () {
 		recovery = 14,
 		hitstun = 22,
 		blockstun = 19,
-		ch_bonus = 3,
+		ch_bonus_hitstun = 3,
+		damage = 1,
+		ch_bonus_damage = 1,
 		stand_hitstun_type = ._Standing_HighReel,
 		crouch_hitstun_type = ._Crouching,
 		stand_blockstun_type = ._Standing,
@@ -1409,7 +1527,9 @@ start :: proc "c" () {
 		recovery = 21,
 		hitstun = 25,
 		blockstun = 16,
-		ch_bonus = 3,
+		ch_bonus_hitstun = 3,
+		damage = 1,
+		ch_bonus_damage = 1,
 		stand_hitstun_type = ._Standing_MidGut,
 		crouch_hitstun_type = ._Crouching,
 		stand_blockstun_type = ._Standing,
@@ -1423,7 +1543,9 @@ start :: proc "c" () {
 		recovery = 21,
 		hitstun = 23,
 		blockstun = 16,
-		ch_bonus = 7,
+		ch_bonus_hitstun = 7,
+		damage = 2,
+		ch_bonus_damage = 1,
 		stand_hitstun_type = ._Standing_MidGut,
 		crouch_hitstun_type = ._Standing_MidGut, // force stand
 		stand_blockstun_type = ._Standing,
@@ -1441,7 +1563,14 @@ start :: proc "c" () {
 		._5P = anim_5P_extra,
 		._2P = anim_2P_extra,
 		._6P = anim_6P_extra,
+		._5Throw = anim_throw_extra,
 	}
+
+	throw_break_array = [2][32]u16be{hitstun_stand_highreel, hitstun_stand_highreel}
+	throw_break_slice = throw_break_array[:]
+
+	throw_break_duration = [2]int{24,24}
+	throw_break_duration_slice = throw_break_duration[:]
 
 	idle_anim_array = {idle_stand_0, idle_stand_1, idle_stand_2, idle_stand_3}
 	walk_f_anim_array = {f_walk_0, f_walk_1, f_walk_2, idle_stand_0}
@@ -1453,9 +1582,9 @@ start :: proc "c" () {
  	guard_high_anim = {guard_stand}
 	guard_low_anim = {guard_crouch}
 
-	throw_default_array = {elbow_0,punch_2, hitstun_stand_low}
+	throw_default_array = {elbow_0,throw_startup_0, elbow_3}
 
-	throw_hit_array = {elbow_0,crouch_punch_2, crouch_punch_2, elbow_3}
+	throw_hit_array = {elbow_0,crouch_punch_2, throw_hit, elbow_3}
 	throw_hit_slice = throw_hit_array[:]
 
 	throw_hit_duration_array = [4]int{4,5,18,7}
@@ -1488,7 +1617,7 @@ start :: proc "c" () {
 
 	p1_data = PlayerData{
 		p_num = PlayerNumber.One,
-		point = {x = 18, y = 70},
+		point = {x = 62, y = 69},
 		current_anim = { 0, 0, 1},
 		previous_move = ._IDLE_5,
 		buffered_move = ._IDLE_5,
@@ -1503,7 +1632,7 @@ start :: proc "c" () {
 
 	p2_data = {
 		p_num = PlayerNumber.Two,
-		point = {x = 160-18, y = 70},
+		point = {x = 88, y = 69},
 		current_anim = { 0, 0, 1},
 		previous_move = ._IDLE_5,
 		buffered_move = ._IDLE_5,
@@ -1543,8 +1672,13 @@ advance_animation :: proc (players:[PlayerNumber]^PlayerData) {
 	for player in players {
 		using player
 		w4.DRAW_COLORS^ = player.p_num == PlayerNumber.One ? 3 : 4 // Set the player colour to be drawn
+
+
 		#partial switch(state){
 			case ._Startup, ._Active, ._Recovery, ._ThrowStartup, ._ThrowActive:
+				if(player.maybe_throw_status == ._Breaking){
+					break
+				}
 				atk:AttackDetails = attack_array[current_move]
 				using atk;
 				full_attack_length := startup + active + recovery
@@ -1559,7 +1693,6 @@ advance_animation :: proc (players:[PlayerNumber]^PlayerData) {
 					case:
 						player.state = ._Recovery
 				}
-			case: {}
 		}
 		if (current_anim.anim_duration  == 0){
 			if(suffering_attack != nil){
@@ -1575,17 +1708,34 @@ advance_animation :: proc (players:[PlayerNumber]^PlayerData) {
 		w4.PALETTE[player_palette_index(p_num)] = StateColoursArray[player.state]
 
 		if(suffering_attack == nil){
-
-			if current_move == ._5Throw{
-				w4.tracef("Duration: %f", f64(current_anim.anim_duration))
-				w4.tracef("Counter: %f", f64(current_anim.counter))
-				w4.tracef("idx: %f", f64(current_anim.idx))
-			}
-
 			animArray := player.maybe_throw_status == nil ? animFrameArrays[current_move] : throw_hit_slice
 			durationArray := player.maybe_throw_status == nil ? animDurationArrays[current_move] : throw_hit_duration_slice
-			do_animation(player, animArray, durationArray, extraAnimArrays[current_move])
 
+			transition_array := [1][32]u16be{stance_transition}
+			transition_slice := transition_array[:]
+
+			transition_duration := [1]int{5}
+			transition_duration_slice := transition_duration[:]
+
+			transition_guard_array := [1][32]u16be{stance_transition_guard}
+			transition_guard_slice := transition_guard_array[:]
+
+			transition_guard_duration := [1]int{5}
+			transition_guard_duration_slice := transition_guard_duration[:]
+
+			transitioning:= stance == .Crouch_to_Stand_Transition || stance == .Stand_to_Crouch_Transition
+			animArray = transitioning ? transition_slice : animArray
+			durationArray = transitioning ? transition_duration_slice : durationArray
+
+			animArray = player.state == ._Blocking && transitioning ? transition_guard_slice : animArray
+			durationArray =  player.state == ._Blocking && transitioning ? transition_guard_duration_slice : durationArray
+		
+			animArray = maybe_throw_status == ._Breaking ? throw_break_slice : animArray
+			durationArray =  maybe_throw_status == ._Breaking ? throw_break_duration[:] : durationArray
+
+			extraAnimArrays := maybe_throw_status == ._Breaking ? nil : extraAnimArrays[current_move]
+
+			do_animation(player, animArray, durationArray, extraAnimArrays)
 		} else {
 			atk := attack_array[suffering_attack.(Movelist)]
 
@@ -1597,7 +1747,7 @@ advance_animation :: proc (players:[PlayerNumber]^PlayerData) {
 	}
 }
 
-update_players_with_hit_resolution :: proc (players:[PlayerNumber]^PlayerData, attack_hit: [PlayerNumber]bool, attack_blocked: [PlayerNumber]bool){
+update_players_with_hit_resolution :: proc (players:[PlayerNumber]^PlayerData, attack_hit: [PlayerNumber]bool, attack_blocked: [PlayerNumber]bool, health:^[PlayerNumber]i8){
 
 	get_blockstun_type := proc (atk:AttackDetails, target_player:^PlayerData) -> BlockstunType {
 		using target_player
@@ -1646,9 +1796,9 @@ update_players_with_hit_resolution :: proc (players:[PlayerNumber]^PlayerData, a
 		if(attack_hit[p_num] == false){continue}
 		opposing_pnum:PlayerNumber = p_num == .One ? .Two : .One
 		atk := attack_array[current_move]
-
-		total_hitstun := is_counterhit(players[opposing_pnum]) ? atk.hitstun + atk.ch_bonus : atk.hitstun
-		w4.tracef("IS COUNTERHIT %x", is_counterhit(players[opposing_pnum]))
+		total_damage := is_counterhit(players[opposing_pnum]) ? atk.damage + atk.ch_bonus_damage : atk.damage
+		health[opposing_pnum] = health[opposing_pnum] - total_damage < 0 ? 0 : health[opposing_pnum] - total_damage
+		total_hitstun := is_counterhit(players[opposing_pnum]) ? atk.hitstun + atk.ch_bonus_hitstun : atk.hitstun
 		players[opposing_pnum].current_anim.anim_duration = total_hitstun
 		players[opposing_pnum].current_anim.counter = 0
 		players[opposing_pnum].current_anim.idx = 0
@@ -1661,41 +1811,71 @@ update_players_with_hit_resolution :: proc (players:[PlayerNumber]^PlayerData, a
 }
 
 player_palette_index :: proc (p_num:PlayerNumber) -> int {return p_num == PlayerNumber.One ? 2 : 3}
-
+player_draw_colour :: proc (p_num:PlayerNumber) -> u16 {return p_num == PlayerNumber.One ? 3 : 4}
 
 update_idle_player_with_move :: proc (using player:^PlayerData){
 	previous_move = current_move
 	current_move = buffered_move
+	@static transition_counters:= [PlayerNumber]int{.One = 0, .Two = 0}
+	transition_threshold := 5
 
 	switch(buffered_move){
-		case ._MOVE_BACKWARD: 
-			stance = .Standing
-			state = ._Moving
-			current_anim.anim_duration  = 1
-			if (previous_move == ._MOVE_BACKWARD){
-				w4.PALETTE[player_palette_index(p_num)] = StateColoursArray[state]
-				return
+		case ._MOVE_BACKWARD, ._MOVE_FORWARD: 
+			if(stance == .Crouching || stance == .Crouch_to_Stand_Transition){
+				stance =.Crouch_to_Stand_Transition 
+				transition_counters[p_num] +=1
+				current_anim.anim_duration = 2
+				
+				if (transition_counters[p_num] == transition_threshold){
+					stance = .Standing
+					current_anim.anim_duration = 3
+					transition_counters[p_num] = 0
+				}
+			} else {
+				stance = .Standing
+				current_anim.anim_duration = 2
 			}
-		case ._MOVE_FORWARD: 
-			stance = .Standing
 			state = ._Moving
-			current_anim.anim_duration  = 2
-			if (previous_move == ._MOVE_FORWARD){
+			if (previous_move == buffered_move){
 				w4.PALETTE[player_palette_index(p_num)] = StateColoursArray[state]
 				return
 			}
 		case ._IDLE_5: 
-			stance = .Standing
+			if(stance == .Crouching || stance == .Crouch_to_Stand_Transition){
+				stance =.Crouch_to_Stand_Transition 
+				transition_counters[p_num] +=1
+				current_anim.anim_duration = 5
+				
+				if (transition_counters[p_num] == transition_threshold){
+					stance = .Standing
+					current_anim.anim_duration = 2
+					transition_counters[p_num] = 0
+				}
+			} else {
+				stance = .Standing
+				current_anim.anim_duration = 2
+			}
 			state = ._Idle
-			current_anim.anim_duration  = 2
-			if (previous_move == ._IDLE_5){
+			if (previous_move == buffered_move){
 				w4.PALETTE[player_palette_index(p_num)] = StateColoursArray[state]
 				return
 			}
 		case ._IDLE_2: 
-			stance = .Crouching
+			if(stance == .Standing || stance == .Stand_to_Crouch_Transition){
+				stance =.Stand_to_Crouch_Transition 
+				transition_counters[p_num] +=1
+				current_anim.anim_duration = 5
+				
+				if (transition_counters[p_num] == transition_threshold){
+					stance = .Crouching
+					current_anim.anim_duration = 2
+					transition_counters[p_num] = 0
+				}
+			} else {
+				stance = .Crouching
+				current_anim.anim_duration = 2
+			}
 			state = ._Idle
-			current_anim.anim_duration  = 2
 		case ._5P: 
 			stance = .Standing
 			state = ._Startup
@@ -1709,18 +1889,43 @@ update_idle_player_with_move :: proc (using player:^PlayerData){
 			state = ._Startup
 			current_anim.anim_duration  = attack_array[buffered_move].active + attack_array[buffered_move].startup + attack_array[buffered_move].recovery
 		case ._5G: 
-			stance = .Standing
+			if(stance == .Crouching || stance == .Crouch_to_Stand_Transition){
+				stance =.Crouch_to_Stand_Transition 
+				transition_counters[p_num] +=1
+				current_anim.anim_duration = 1
+				
+				if (transition_counters[p_num] == transition_threshold){
+					stance = .Standing
+					current_anim.anim_duration = 2
+					transition_counters[p_num] = 0
+				}
+			} else {
+				stance = .Standing
+				current_anim.anim_duration = 2
+			}
 			state = ._Blocking
-			current_anim.anim_duration = 2
-			if (previous_move == ._5G){
+
+			if (previous_move == buffered_move){
 				w4.PALETTE[player_palette_index(p_num)] = StateColoursArray[state]
 				return
 			}
 		case ._2G: 
-			stance = .Crouching
+			if(stance == .Standing || stance == .Stand_to_Crouch_Transition){
+				stance =.Stand_to_Crouch_Transition 
+				transition_counters[p_num] +=1
+				current_anim.anim_duration = 1
+				
+				if (transition_counters[p_num] == transition_threshold){
+					stance = .Crouching
+					current_anim.anim_duration = 2
+					transition_counters[p_num] = 0
+				}
+			} else {
+				stance = .Crouching
+				current_anim.anim_duration = 2
+			}
 			state = ._Blocking
-			current_anim.anim_duration = 2
-			if (previous_move == ._2G){
+			if (previous_move == buffered_move){
 				w4.PALETTE[player_palette_index(p_num)] = StateColoursArray[state]
 				return
 			}
@@ -1836,6 +2041,10 @@ resolve_accel :: proc (players: ^[PlayerNumber]^PlayerData, accel_data:^Accelera
 	p1_pushbox_x_coord := players[.One].point.x + (players[.One].current_move == ._6P ? 12 : 16)
 	p2_pushbox_x_coord := players[.Two].point.x + (players[.Two].current_move == ._6P ? 5 : 0)
 
+	if players[.One].maybe_throw_status != nil {p1_pushbox_x_coord -= 4}
+	if players[.Two].maybe_throw_status != nil {p2_pushbox_x_coord += 4}
+
+
 	overlap := p2_pushbox_x_coord <= p1_pushbox_x_coord ? true : false
 	overlap_degree := p1_pushbox_x_coord - p2_pushbox_x_coord
 	if(overlap){
@@ -1885,7 +2094,13 @@ Hitbox :: struct {
 stand_blockbox:Hitbox = {
 	type = ._Blockbox,
 	pt = {0,0},
-	dims = {16, 32},
+	dims = {15, 32},
+}
+
+stand_p2_blockbox:Hitbox = {
+	type = ._Blockbox,
+	pt = {1,0},
+	dims = {15, 32},
 }
 
 stand_6P_hurtbox_p1:Hitbox = {
@@ -2031,6 +2246,24 @@ draw_hitbox_2 :: proc (player:^PlayerData, hitbox:Hitbox, show_type: HitboxType 
 }
 
 apply_suffering_attack :: proc (players:^[PlayerNumber]^PlayerData, accel_data:^AccelerationData) {
+
+	if players[.One].maybe_throw_status == ._Breaking{
+
+		for player in players {
+			using accel_data, player
+			current_attack_frame:= attack_array[._5Throw].recovery - player.current_anim.anim_duration
+			switch(current_attack_frame){
+				case 1: accel[p_num] = 1; 
+				case 11: accel[p_num] = -1; 
+				case 12: accel[p_num] = -2;
+				case 13: accel[p_num] = -3;
+				case 15,18: accel[p_num] = -1;
+			}
+		}
+		return
+	}
+
+
 	for player in players {
 		using player
 		if(suffering_attack == nil){continue}
@@ -2044,14 +2277,20 @@ apply_suffering_attack :: proc (players:^[PlayerNumber]^PlayerData, accel_data:^
 			case ._6P: switch(current_attack_frame){case 1: accel[p_num] = -2}
 			case ._5Throw: switch(current_attack_frame){
 				case 1: accel[p_num] = 1; 
-				case 9: accel[p_num] = -1; 
-				case 10: accel[p_num] = -2;
-				case 11: accel[p_num] = -3}
+				case 11: accel[p_num] = -1; 
+				case 12: accel[p_num] = -2;
+				case 13: accel[p_num] = -3;
+				case 15,18: accel[p_num] = -1;
+			}
 		}
 	}
 }
 
 apply_move_acceleration :: proc (players:^[PlayerNumber]^PlayerData, accel_data:^AccelerationData) {
+	if players[.One].maybe_throw_status == ._Breaking {
+		return
+	}
+
 	for player in players {
 		using player
 		if(suffering_attack != nil){continue}
@@ -2095,7 +2334,11 @@ apply_move_acceleration :: proc (players:^[PlayerNumber]^PlayerData, accel_data:
 	}
 }
 
-apply_move_state :: proc (players:^[PlayerNumber]^PlayerData, accel_data:^AccelerationData, hitbox_data:^HitboxData) {
+apply_move_hitboxes :: proc (players:^[PlayerNumber]^PlayerData, hitbox_data:^HitboxData) {
+	if players[.One].maybe_throw_status == ._Breaking {
+		return
+	}
+
 	for player in players {
 		using player
 		if(suffering_attack != nil){continue}
@@ -2129,7 +2372,6 @@ apply_move_state :: proc (players:^[PlayerNumber]^PlayerData, accel_data:^Accele
 					case 2: 
 						fist_hurtbox := p_num == .One ? punch_5P_hurtbox_p1 : punch_5P_hurtbox_p2
 						fist_hitbox := p_num == .One ? punch_5P_hitbox_p1 : punch_5P_hitbox_p2
-						w4.tracef("Current attack frame %f", f64(current_attack_frame))
 						if(current_attack_frame >= ranges.active.end){
 								hitboxes[p_num] = {stand_full_hurtbox, fist_hurtbox, nil}
 							} else {
@@ -2151,7 +2393,6 @@ apply_move_state :: proc (players:^[PlayerNumber]^PlayerData, accel_data:^Accele
 					case 2: 
 						elbow_hurtbox := p_num == .One ? stand_6P_elbow_hurtbox_p1 : stand_6P_elbow_hurtbox_p2
 						elbow_hitbox := p_num == .One ? stand_6P_hitbox_p1 : stand_6P_hitbox_p2
-						w4.tracef("Current attack frame %f", f64(current_attack_frame))
 						if(current_attack_frame == 14 || current_attack_frame == 15){
 							hitboxes[p_num] = {
 								p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2,
@@ -2178,7 +2419,6 @@ apply_move_state :: proc (players:^[PlayerNumber]^PlayerData, accel_data:^Accele
 					case 2: 
 						fist_hurtbox := p_num == .One ? punch_2P_hurtbox_p1 : punch_2P_hurtbox_p2
 						fist_hitbox := p_num == .One ? punch_2P_hitbox_p1 : punch_2P_hitbox_p2
-						w4.tracef("Current attack frame %f", f64(current_attack_frame))
 						if(current_attack_frame >= ranges.active.end){
 								hitboxes[p_num] = {crouch_hurtbox, fist_hurtbox, nil}
 							} else {
@@ -2188,7 +2428,7 @@ apply_move_state :: proc (players:^[PlayerNumber]^PlayerData, accel_data:^Accele
 					case 3: hitboxes[p_num] = {crouch_hurtbox, nil, nil}
 				}
 			case ._5G:
-				hitboxes[p_num] = {stand_blockbox, nil, nil}
+				hitboxes[p_num] = {p_num == .One ? stand_blockbox : stand_p2_blockbox, nil, nil}
 			case ._2G:
 				hitboxes[p_num] = {crouch_blockbox, nil, nil}
 		}
@@ -2291,7 +2531,17 @@ resolve_hitboxes :: proc (players: ^[PlayerNumber]^PlayerData, hitbox_data:^Hitb
 			block_success := attack_blocked_by_height(current_atk, players[defending_pnum])
 			attack_blocked[player_atking.p_num] = intersect && stance_connect && block_success
 			attack_hit[player_atking.p_num] = intersect && stance_connect && !block_success
-			if current_atk.level == .HighThrow && attack_hit[player_atking.p_num] {player_atking.maybe_throw_status = ._Success}
+			if current_atk.level == .HighThrow && attack_hit[player_atking.p_num] {
+				#partial switch(players[defending_pnum].state) {
+					case ._ThrowActive, ._ThrowStartup : 
+						player_atking.maybe_throw_status = ._Breaking
+						players[defending_pnum].maybe_throw_status = ._Breaking
+						attack_hit[player_atking.p_num] = false
+					case: 	
+						player_atking.maybe_throw_status = ._Success
+				}
+			
+			}
 		}
 		
 		for hurtbox in hurtboxes[defending_pnum] {
@@ -2300,20 +2550,119 @@ resolve_hitboxes :: proc (players: ^[PlayerNumber]^PlayerData, hitbox_data:^Hitb
 			intersect := player_atking.p_num == .One ? hurtbox_x_point <= attack_x_point : attack_x_point <= hurtbox_x_point
 			attack_hit[player_atking.p_num] = intersect && stance_connect
 			if current_atk.level == .HighThrow && attack_hit[player_atking.p_num] {player_atking.maybe_throw_status = ._Success}
+			if current_atk.level == .HighThrow && attack_hit[player_atking.p_num] {
+				#partial switch(players[defending_pnum].state) {
+					case ._ThrowActive, ._ThrowStartup : 
+						player_atking.maybe_throw_status = ._Breaking
+						players[defending_pnum].maybe_throw_status = ._Breaking
+						attack_hit[player_atking.p_num] = false
+					case: 	
+						player_atking.maybe_throw_status = ._Success
+				}
+			
+			}
 		}
 
 	}
 	return attack_hit, attack_blocked
 }
 
+
+
+draw_healthbars :: proc (health:[PlayerNumber]i8) {
+	
+
+	w4.DRAW_COLORS^ = 2
+
+	w4.rect(36,27,42, 7)
+	w4.rect(36 + 9 + 40,27,42, 7)
+	w4.DRAW_COLORS^ = 3
+	w4.rect(37+(5*i32(8 -health[.One])), 28, 5*u32(health[.One]), 5)
+
+	w4.DRAW_COLORS^ = 4
+	w4.rect(86, 28, 5*u32(health[.Two]), 5)
+
+	for lifebar, idx in health {
+		offset :i32 = idx == .One ? 2 :  50
+		offset += 25
+		// w4.rect(10 + offset ,28 , 5*u32(lifebar), 5)
+		text_offset:i32 = idx == .One ? 0 : 78
+		text_offset += 25
+		w4.DRAW_COLORS^ = player_draw_colour(idx)
+		w4.text(idx == .One ? "P1" : "P2", 10 + text_offset, 36 )
+	}
+	for lifebar in health {
+		
+	}
+}
+
+opposite_pnum :: proc (pnum:PlayerNumber) -> PlayerNumber{return pnum == .One ? .Two : .One }
+
+draw_stage :: proc () {
+	w4.DRAW_COLORS^ = 2 
+	w4.line(29, 101, 29, 104)
+	w4.line(160-29, 101, 160-29, 104)
+	
+	w4.line(29, 105, 160-29, 105)
+
+	w4.line(29, 100, 29+11, 104-9)
+	w4.line(160-29, 100, (160-29)-11, 104-9)
+
+	w4.line(29+11, 104-9, (160-29)-11, 104-9)
+
+	w4.line(34, 101, 160-34, 101)
+}
+
+draw_round_markers :: proc () {
+	w4.DRAW_COLORS^ = 0x12
+
+	number_won:int = 2
+	for i in 0..3 {
+		w4.DRAW_COLORS^ = number_won < i+1 ?  0x12 : 0x23
+		w4.rect(74  - (i32(i) * 5), 36, 5, 5)
+	}
+	number_won_2:int = 1
+	for i in 0..3 {
+		w4.DRAW_COLORS^ = number_won_2 < i+1 ?  0x12 : 0x24
+		w4.rect(84  + (i32(i) * 5), 36, 5, 5)
+	}
+}
+
 @export
 update :: proc "c" () {
 	context = runtime.default_context()
 	w4.DRAW_COLORS^ = 2 
-	w4.text("Double!", 10, 10)
-
+	w4.text("Updating?!", 10, 10)
+	draw_stage()
+	@static health := [PlayerNumber]i8{.One = 8, .Two = 8}
 	input_ptrs := [PlayerNumber]^[3]FG_Notation{ .One = &fg_input_1, .Two = &fg_input_2}
 	player_ptrs := [PlayerNumber]^PlayerData{.One = &p1_data, .Two = &p2_data}
+
+	ring_out:[PlayerNumber]bool
+
+	is_health_zero:[2]bool
+	for hbar, idx in health {
+		using player_ptrs[idx].point
+		switch {
+			case x < 30, x > 130-16 : health[idx] = 0
+		}
+		is_health_zero[idx] = hbar == 0
+	}
+	for hbar, pnum in health {
+		if is_health_zero[pnum]{
+			opposing_pnum:= opposite_pnum(pnum)
+			str:= is_health_zero[opposing_pnum] ? "Draw!" : (pnum == .One ? "P2 wins!" : "P1 wins!")
+			w4.DRAW_COLORS^ = 2
+			w4.rect(30, 50, 100, 30)
+			w4.DRAW_COLORS^ = 1 
+			w4.text(str, 50, 60)
+			return
+		}
+	}
+
+	draw_healthbars(health)
+	draw_round_markers()
+
 
 
 	hitbox_data:HitboxData = {{.One = {nil, nil, nil}, .Two = {nil, nil, nil}}}
@@ -2324,7 +2673,7 @@ update :: proc "c" () {
 		false,
 	}
 
-	for player, idx in player_ptrs {
+	for player in player_ptrs {
 		using player
 		playerGamepad := player.p_num == .One ? w4.GAMEPAD1^ : w4.GAMEPAD2^
 		buttons_to_fg_notation_set(playerGamepad, input_ptrs[p_num], p_num)
@@ -2336,36 +2685,59 @@ update :: proc "c" () {
 	apply_suffering_attack(&player_ptrs, &accel_data)
 	//Everything above is pretty good
 	apply_move_acceleration(&player_ptrs, &accel_data)
-	apply_move_state(&player_ptrs, &accel_data, &hitbox_data)
+	apply_move_hitboxes(&player_ptrs, &hitbox_data)
 
 	@static disable_hitboxes := false
 	@static disable_hitboxes_counter :u32= 0
-	@static disable_hitboxes_threshold :u32= 0
+	@static disable_hitboxes_threshold :u32= 1
 	@static impact := false
+	@static throw_break := false
 
 	if disable_hitboxes { disable_hitboxes_counter += 1}
 	if disable_hitboxes_counter == disable_hitboxes_threshold {
 		disable_hitboxes = false; 
 		disable_hitboxes_counter = 0
 		impact = false
+		throw_break = true
 	}
 	if(!disable_hitboxes){
+		
 		attack_hit, attack_blocked := resolve_hitboxes(&player_ptrs, &hitbox_data)
-
 		for x in attack_hit {if x == true {impact = true}}
 		for x in attack_blocked {if x == true {impact = true}}
-	
+
 		if(impact){
-			update_players_with_hit_resolution(player_ptrs, attack_hit, attack_blocked)
+			update_players_with_hit_resolution(player_ptrs, attack_hit, attack_blocked, &health)
 			disable_hitboxes = true
 			disable_hitboxes_threshold = p1_data.suffering_attack == nil ? attack_array[p1_data.current_move].active : attack_array[p2_data.current_move].active 
 			disable_hitboxes_threshold += 5
 			//^ This is a hack. Make a real solution in cleanup
+		} 
+		if (p1_data.maybe_throw_status == ._Breaking && !throw_break){
+			for player in player_ptrs {
+				throw_data := attack_array[._5Throw]
+				using throw_data
+				full_attack_length := startup + active + recovery
+				active_period := startup + active
+				current_attack_frame := full_attack_length - player.current_anim.anim_duration 
+				player.current_anim.anim_duration = recovery 
+				player.current_anim.counter = 0
+				player.current_anim.idx = 0
+				player.state = ._Recovery
+				player.suffering_attack = nil
+			}
+			disable_hitboxes = true 
+			disable_hitboxes_threshold += 2
+			throw_break = true
+		}
+		for player in player_ptrs {
+			using player
+			opposing_pnum :PlayerNumber = p_num == .One ? .Two : .One
+			if attack_blocked[player.p_num] {accel_data.accel[opposing_pnum] -= 2}
 		}
 	}
-
 	advance_animation(player_ptrs)
 	resolve_accel(&player_ptrs, &accel_data)
-	draw_rects()
+	// draw_rects()
 	// draw_hitbox(.One, {0,0},{3,4})
 }
