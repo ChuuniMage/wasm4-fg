@@ -1252,11 +1252,6 @@ debug_fg_note_display :: proc (fg_input:^[3]FG_Notation, player:^PlayerData) {
 		w4.text(str, 10 + offset + (i32(idx) * 8) , 20)
 	}
 
-	for input, idx in fg_input {
-		bs, w := utf8.encode_rune(DEBUG_fg_note_to_rune_array[fg_input[idx]])
-		str := string(bs[:w])
-		w4.text(str, 10 + offset + (i32(idx) * 8) , 20)
-	}
 }
 
 HitstunType :: enum u8 {
@@ -1999,10 +1994,10 @@ HitboxSlot :: enum {
 
 //MainHurtbox, Hitbox, ExtraHurtbox
 
-MaybeHitbox :: union { Hitbox, }
+MaybeHitboxPtr :: union { ^Hitbox, }
 
 HitboxData :: struct {
-	hitboxes:[PlayerNumber][3]MaybeHitbox,
+	hitboxes:[PlayerNumber][3]MaybeHitboxPtr,
 }
 
 resolve_accel :: proc (players: ^[PlayerNumber]^PlayerData, accel_data:^AccelerationData) {
@@ -2071,46 +2066,22 @@ stand_blockbox:Hitbox = {
 	dims = {16, 32},
 }
 
-stand_p2_blockbox:Hitbox = {
-	type = ._Blockbox,
-	pt = {1,0},
-	dims = {16, 32},
-}
-
-stand_6P_hurtbox_p1:Hitbox = {
+stand_6P_hurtbox:Hitbox = {
 	type = ._Hurtbox,
 	pt = {0,0},
 	dims = {12, 32},
 }
 
-stand_6P_hitbox_p1:Hitbox = {
+stand_6P_hitbox:Hitbox = {
 	type = ._ActiveHitbox,
 	pt = {12,11},
 	dims = {5, 8},
 }
 
-stand_6P_elbow_hurtbox_p1:Hitbox = {
+stand_6P_elbow_hurtbox:Hitbox = {
 	type = ._Hurtbox,
 	pt = {12,11},
 	dims = {5, 8},
-}
-
-stand_6P_hurtbox_p2:Hitbox = {
-	type = ._Hurtbox,
-	pt = {5,0},
-	dims = {12, 32},
-}
-
-stand_6P_hitbox_p2:Hitbox = {
-	type = ._ActiveHitbox,
-	pt = {-1,11},
-	dims = {6, 8},
-}
-
-stand_6P_elbow_hurtbox_p2:Hitbox = {
-	type = ._Hurtbox,
-	pt = {-1,11},
-	dims = {6, 8},
 }
 
 stand_chest_hurtbox:Hitbox = {
@@ -2118,7 +2089,6 @@ stand_chest_hurtbox:Hitbox = {
 	pt = {0,0},
 	dims = {16, 18},
 }
-
 
 stand_full_hurtbox:Hitbox = {
 	type = ._Hurtbox,
@@ -2144,64 +2114,33 @@ crouch_hurtbox:Hitbox = {
 	dims = {16, 23},
 }
 
-throw_hitbox_p1:Hitbox = {
+throw_hitbox:Hitbox = {
 	type = ._ActiveHitbox,
 	pt = {16, 6},
 	dims = {5,4},
 }
 
-throw_hitbox_p2:Hitbox = {
-	type = ._ActiveHitbox,
-	pt = {-5, 5},
-	dims = {5,4},
-}
-
-
-punch_5P_hitbox_p1:Hitbox = {
+punch_5P_hitbox:Hitbox = {
 	type = ._ActiveHitbox,
 	pt = {16, 6},
 	dims = {5,4},
 }
 
-punch_5P_hurtbox_p1:Hitbox = {
+punch_5P_hurtbox:Hitbox = {
 	type = ._Hurtbox,
 	pt = {16, 5},
 	dims = {5,4},
 }
 
-punch_5P_hitbox_p2:Hitbox = {
-	type = ._ActiveHitbox,
-	pt = {-5, 5},
-	dims = {5,4},
-}
-
-punch_5P_hurtbox_p2:Hitbox = {
-	type = ._Hurtbox,
-	pt = {-5, 5},
-	dims = {5,4},
-}
-
-punch_2P_hitbox_p1:Hitbox = {
+punch_2P_hitbox:Hitbox = {
 	type = ._ActiveHitbox,
 	pt = {16, 15},
 	dims = {5,4},
 }
 
-punch_2P_hurtbox_p1:Hitbox = {
+punch_2P_hurtbox:Hitbox = {
 	type = ._Hurtbox,
 	pt = {16, 15},
-	dims = {5,4},
-}
-
-punch_2P_hitbox_p2:Hitbox = {
-	type = ._ActiveHitbox,
-	pt = {-5, 15},
-	dims = {5,4},
-}
-
-punch_2P_hurtbox_p2:Hitbox = {
-	type = ._Hurtbox,
-	pt = {-5, 15},
 	dims = {5,4},
 }
 
@@ -2336,7 +2275,6 @@ apply_move_hitboxes :: proc (players:^[PlayerNumber]^PlayerData, hitbox_data:^Hi
 		return
 	}
 	
-
 	for player in players {
 		using player
 		if(state == ._RingOut){continue}
@@ -2348,86 +2286,57 @@ apply_move_hitboxes :: proc (players:^[PlayerNumber]^PlayerData, hitbox_data:^Hi
 	
 		using hitbox_data;
 		//TODO: Put the moves hitboxes on the move itself?
-		ranges := attack_ranges(attack_array[current_move])
+		end_of_active_period := atk.startup + atk.active
 		switch(current_move){
 			case ._5Throw:
 				switch (player.current_anim.idx){
-					case 0: hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
+					case 0,2,3: hitboxes[p_num] = {&stand_full_hurtbox, nil, nil}
 					case 1:	
-						throw_hitbox := p_num == .One ? throw_hitbox_p1 : throw_hitbox_p2
-						if (current_attack_frame == 10){
-							hitboxes[p_num] = {stand_full_hurtbox, throw_hitbox, nil}
-						}else {
-							hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
-						}
-						
-					case 2:	hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
-					case 3:	hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
+						hitboxes[p_num] = {
+							&stand_full_hurtbox,
+							current_attack_frame == 10 ? MaybeHitboxPtr(&throw_hitbox) : MaybeHitboxPtr(nil), 
+							nil,
+							}
 				}
 			case ._5P: 
 				switch(player.current_anim.idx){
-					case 0: hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
-					case 1: hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
+					case 0,1,3: hitboxes[p_num] = {&stand_full_hurtbox, nil, nil}
 					case 2: 
-						fist_hurtbox := p_num == .One ? punch_5P_hurtbox_p1 : punch_5P_hurtbox_p2
-						fist_hitbox := p_num == .One ? punch_5P_hitbox_p1 : punch_5P_hitbox_p2
-						if(current_attack_frame >= ranges.active.end){
-								hitboxes[p_num] = {stand_full_hurtbox, fist_hurtbox, nil}
-							} else {
-								hitboxes[p_num] = {stand_full_hurtbox, fist_hurtbox, fist_hitbox}
-							}
-					case 3: hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
+						hitboxes[p_num] = {
+							&stand_full_hurtbox, 
+							&punch_5P_hurtbox, 
+							current_attack_frame >= end_of_active_period ? MaybeHitboxPtr(nil) : MaybeHitboxPtr(&punch_5P_hitbox) ,
+						}
 					}
-			case ._MOVE_FORWARD: 
-				hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
-			case ._MOVE_BACKWARD: 
-				hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
-			case ._IDLE_5: 
-				hitboxes[p_num] = {stand_full_hurtbox, nil, nil}
+			case ._MOVE_FORWARD, ._MOVE_BACKWARD, ._IDLE_5: 
+				hitboxes[p_num] = {&stand_full_hurtbox, nil, nil}
 			case ._6P:
 				switch(player.current_anim.idx){
-					case 0: hitboxes[p_num] = {p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2, nil, nil }
-					case 1: hitboxes[p_num] = {p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2, nil, nil }
-					case 2: 
-						elbow_hurtbox := p_num == .One ? stand_6P_elbow_hurtbox_p1 : stand_6P_elbow_hurtbox_p2
-						elbow_hitbox := p_num == .One ? stand_6P_hitbox_p1 : stand_6P_hitbox_p2
-						if(current_attack_frame == 14 || current_attack_frame == 15){
+					case 0,1,4: hitboxes[p_num] = {&stand_6P_hurtbox, nil, nil }
+					case 2, 3: 
 							hitboxes[p_num] = {
-								p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2,
-								elbow_hurtbox, elbow_hitbox}
-
-							} else {
-								hitboxes[p_num] = {
-									p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2,
-									elbow_hurtbox, nil,}
+								&stand_6P_hurtbox,
+								&stand_6P_elbow_hurtbox, 
+								current_attack_frame == 14 || current_attack_frame == 15 ? MaybeHitboxPtr(&stand_6P_hitbox): MaybeHitboxPtr(nil),
 							}
-					case 3: hitboxes[p_num] = {
-						p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2, 
-						p_num == .One ? stand_6P_elbow_hurtbox_p1 : stand_6P_elbow_hurtbox_p2,
-						nil, }
-					case 4: hitboxes[p_num] = {p_num == .One ? stand_6P_hurtbox_p1 : stand_6P_hurtbox_p2 , nil, nil}
 				}
 			case ._IDLE_2:
-				hitboxes[p_num] = {crouch_hurtbox, nil, nil}
+				hitboxes[p_num] = {&crouch_hurtbox, nil, nil}
 			case ._2P:
 				switch(player.current_anim.idx){
-					case 0: hitboxes[p_num] = {crouch_hurtbox, nil, nil}
-					case 1: hitboxes[p_num] = {crouch_hurtbox, nil, nil}
+					case 0, 1, 3: hitboxes[p_num] = {&crouch_hurtbox, nil, nil}
 					case 2: 
-						fist_hurtbox := p_num == .One ? punch_2P_hurtbox_p1 : punch_2P_hurtbox_p2
-						fist_hitbox := p_num == .One ? punch_2P_hitbox_p1 : punch_2P_hitbox_p2
-						if(current_attack_frame >= ranges.active.end){
-								hitboxes[p_num] = {crouch_hurtbox, fist_hurtbox, nil}
-							} else {
-								hitboxes[p_num] = {crouch_hurtbox, fist_hurtbox, fist_hitbox,}
-							}
+						hitboxes[p_num] = {
+							&crouch_hurtbox, 
+							&punch_2P_hurtbox, 
+							current_attack_frame >= end_of_active_period ? MaybeHitboxPtr(nil) : MaybeHitboxPtr(&punch_2P_hitbox),
+						}
 	
-					case 3: hitboxes[p_num] = {crouch_hurtbox, nil, nil}
 				}
 			case ._5G:
-				hitboxes[p_num] = {p_num == .One ? stand_blockbox : stand_p2_blockbox, nil, nil}
+				hitboxes[p_num] = {&stand_blockbox, nil, nil}
 			case ._2G:
-				hitboxes[p_num] = {crouch_blockbox, nil, nil}
+				hitboxes[p_num] = {&crouch_blockbox, nil, nil}
 		}
 	}
 
@@ -2438,16 +2347,16 @@ resolve_hitboxes :: proc (players: ^[PlayerNumber]^PlayerData, hitbox_data:^Hitb
 	attack_hit = {.One = false, .Two = false}
 	attack_blocked = {.One = false, .Two = false}
 
-	actives:[PlayerNumber]MaybeHitbox = { .One = nil, .Two = nil}
-	hurtboxes:[PlayerNumber][2]MaybeHitbox = {.One = {nil, nil}, .Two = {nil, nil}}
-	blockboxes:[PlayerNumber]MaybeHitbox = {.One = nil, .Two = nil}
+	actives:[PlayerNumber]MaybeHitboxPtr = { .One = nil, .Two = nil}
+	hurtboxes:[PlayerNumber][2]MaybeHitboxPtr = {.One = {nil, nil}, .Two = {nil, nil}}
+	blockboxes:[PlayerNumber]MaybeHitboxPtr = {.One = nil, .Two = nil}
 
 	for player in players {
 		hurtbox_idx := 0
 		for hitbox in hitbox_data.hitboxes[player.p_num]{
 			if (hitbox == nil) {continue}
 		
-			switch(hitbox.(Hitbox).type){
+			switch(hitbox.(^Hitbox).type){
 				case ._ActiveHitbox: actives[player.p_num] = hitbox
 				case ._Blockbox: blockboxes[player.p_num] = hitbox
 				case ._Hurtbox: hurtboxes[player.p_num][hurtbox_idx] = hitbox; hurtbox_idx += 1
@@ -2508,8 +2417,13 @@ resolve_hitboxes :: proc (players: ^[PlayerNumber]^PlayerData, hitbox_data:^Hitb
 		return false
 	}
 
-	get_furthest_hitbox_x_point := proc (player:^PlayerData, hitbox:Hitbox) -> i32 {
-		return player.point.x + hitbox.pt.x + i32(player.p_num == .One ? i32(hitbox.dims.w) : 0)   
+
+	get_furthest_hitbox_x_point := proc (player:^PlayerData, hitbox:^Hitbox) -> (x_point:i32) {
+		switch (player.p_num){
+			case .One: x_point = player.point.x + hitbox.pt.x + i32(hitbox.dims.w)
+			case .Two: x_point = player.point.x + 16 - hitbox.pt.x - i32(hitbox.dims.w)
+		}
+		return
 	}
 
 	apply_throw := proc (player_atking:^PlayerData, player_defending:^PlayerData, attack_hit:^[PlayerNumber]bool) -> bool{
@@ -2529,19 +2443,18 @@ resolve_hitboxes :: proc (players: ^[PlayerNumber]^PlayerData, hitbox_data:^Hitb
 		return false
 	}
 
-
 	for player_atking in players {
 
 		if(actives[player_atking.p_num] == nil){continue}
 		using player_atking
-		attack_x_point: = get_furthest_hitbox_x_point(player_atking, actives[player_atking.p_num].(Hitbox))
+		attack_x_point: = get_furthest_hitbox_x_point(player_atking, actives[player_atking.p_num].(^Hitbox))
 		defending_pnum:PlayerNumber = player_atking.p_num == .One ? .Two : .One
 
 		current_atk := attack_array[player_atking.current_move]
 		stance_connect := attack_connected_by_height(current_atk, players[defending_pnum])
 
 		if (blockboxes[defending_pnum] != nil){ 
-			blockbox_x_point := get_furthest_hitbox_x_point(players[defending_pnum], blockboxes[defending_pnum].(Hitbox))
+			blockbox_x_point := get_furthest_hitbox_x_point(players[defending_pnum], blockboxes[defending_pnum].(^Hitbox))
 			intersect := player_atking.p_num == .One ? blockbox_x_point <= attack_x_point : attack_x_point <= blockbox_x_point
 			block_success := attack_blocked_by_height(current_atk, players[defending_pnum])
 			attack_blocked[player_atking.p_num] = intersect && stance_connect && block_success
@@ -2553,7 +2466,7 @@ resolve_hitboxes :: proc (players: ^[PlayerNumber]^PlayerData, hitbox_data:^Hitb
 		
 		for hurtbox in hurtboxes[defending_pnum] {
 			if(hurtbox == nil){continue}
-			hurtbox_x_point := get_furthest_hitbox_x_point(players[defending_pnum], hurtbox.(Hitbox))
+			hurtbox_x_point := get_furthest_hitbox_x_point(players[defending_pnum], hurtbox.(^Hitbox))
 			intersect := player_atking.p_num == .One ? hurtbox_x_point <= attack_x_point : attack_x_point <= hurtbox_x_point
 			attack_hit[player_atking.p_num] = intersect && stance_connect
 			if (apply_throw(player_atking, players[defending_pnum], &attack_hit)){
@@ -2981,7 +2894,6 @@ update :: proc "c" () {
 		buttons_to_fg_notation_set(playerGamepad, input_ptrs[p_num], p_num)
 		when(DEBUGGING) {debug_fg_note_display(input_ptrs[p_num], player)}
 		player.buffered_move = fg_notation_to_move(input_ptrs[p_num])
-
 
 		if(player.state == ._Idle){
 			update_idle_player_with_move(player)
