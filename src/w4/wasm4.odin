@@ -3,7 +3,6 @@ package wasm4
 
 foreign import wasm4 "env"
 
-// #assert(size_of(int) == size_of(u32))
 // ┌───────────────────────────────────────────────────────────────────────────┐
 // │                                                                           │
 // │ Platform Constants                                                        │
@@ -126,17 +125,19 @@ Tone_Duration :: struct {
 }
 
 
+@(private)
+foreign wasm4 {
+	@(link_name="tone")
+	internal_tone :: proc(frequency: u32, duration_in_frames: u32, volume_percent: u32, flags: u32) ---
+}
+
 // Plays a sound tone.
-tone :: proc "c" (frequency: u16, duration_in_frames: u8, volume_percent: u32, channel: Tone_Channel, duty_cycle := Tone_Duty_Cycle.Eigth, pan := Tone_Pan.Center) {
-	tone_complex(frequency, frequency, {sustain=duration_in_frames}, volume_percent, channel, duty_cycle)
+tone :: proc "c" (frequency: u32, duration: u32, volume_percent: u32, channel: Tone_Channel, duty_cycle := Tone_Duty_Cycle.Eigth, pan := Tone_Pan.Center) {
+	flags := u32(channel) | u32(duty_cycle) | u32(pan)
+	internal_tone(frequency, duration, volume_percent, flags)
 }
 
 tone_complex :: proc "c" (start_frequency, end_frequency: u16, duration: Tone_Duration, volume_percent: u32, channel: Tone_Channel, duty_cycle := Tone_Duty_Cycle.Eigth, pan := Tone_Pan.Center) {
-	@(default_calling_convention="c")
-	foreign wasm4 {
-		@(link_name="tone")
-		internal_tone :: proc(frequency: u32, duration_in_frames: u32, volume_percent: u32, flags: u32) ---
-	}
 	flags := u32(channel) | u32(duty_cycle) | u32(pan)
 	frequency := u32(start_frequency) | u32(end_frequency)<<16
 	duration_in_frames := u32(duration.attack)<<24 | u32(duration.delay)<<16 | u32(duration.release)<<8 | u32(duration.sustain)
@@ -171,6 +172,14 @@ foreign wasm4 {
 	// Prints a message to the debug console.
 	@(link_name="traceUtf8")
 	trace :: proc(text: string) ---
-	tracef :: proc(fmt:cstring, #c_vararg args: ..any) --- //Note: cast ints to float with f64(int)
+	// Prints a message to the debug console, with a format string.
+	// These formats are supported: 
+	// %c: Character
+	// %d: Decimal
+	// %f: Float (Cast ints to float with f64(your_int))
+	// %s: String
+	// %x: Hex
+	tracef :: proc(fmt:cstring, #c_vararg args: ..any) ---
+	
 }
 
