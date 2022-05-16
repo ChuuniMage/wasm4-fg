@@ -1378,11 +1378,6 @@ PlayerAnimData :: struct  {
 	anim_duration:u8,
 }
 
-SufferingAttack :: union {
-	Movelist,
-}
-
-
 PlayerData :: struct {
 	p_num:PlayerNumber,
 	point:Point,
@@ -1393,7 +1388,7 @@ PlayerData :: struct {
 	current_move:Movelist,
 	buffered_move:Movelist,
 	current_colour:u32,
-	suffering_attack:SufferingAttack,
+	suffering_attack:Maybe(Movelist),
 	suffering_attack_duration:[1]u8,
 	suffering_slice:[]u8,
 }
@@ -1630,28 +1625,6 @@ start :: proc "c" () {
 	init_pdata(&p1_data, .One)
 	init_pdata(&p2_data, .Two)
 
-}
-
-Range :: struct {
-	start:u8,
-	end:u8,
-}
-
-//Ranges are from first frame relevant to last frame relevant, ie, 1-10 = 1 up-to-ten inclusive
-AttackDetailRanges :: struct {
-	startup:Range,
-	active:Range,
-	recovery:Range,
-}
-
-
-attack_ranges :: proc (atk:AttackDetails) -> AttackDetailRanges{
-	new_ranges := AttackDetailRanges{
-		startup = {1,atk.startup},
-		active = {atk.startup + 1, atk.startup + atk.active},
-		recovery = {atk.startup + atk.active + 1, atk.startup + atk.active + atk.recovery},
-	}
-	return new_ranges
 }
 
 advance_animation :: proc (players:[PlayerNumber]^PlayerData) {
@@ -1994,10 +1967,8 @@ HitboxSlot :: enum {
 
 //MainHurtbox, Hitbox, ExtraHurtbox
 
-MaybeHitboxPtr :: union { ^Hitbox, }
-
 HitboxData :: struct {
-	hitboxes:[PlayerNumber][3]MaybeHitboxPtr,
+	hitboxes:[PlayerNumber][3]Maybe(^Hitbox),
 }
 
 resolve_accel :: proc (players: ^[PlayerNumber]^PlayerData, accel_data:^AccelerationData) {
@@ -2294,7 +2265,7 @@ apply_move_hitboxes :: proc (players:^[PlayerNumber]^PlayerData, hitbox_data:^Hi
 					case 1:	
 						hitboxes[p_num] = {
 							&stand_full_hurtbox,
-							current_attack_frame == 10 ? MaybeHitboxPtr(&throw_hitbox) : MaybeHitboxPtr(nil), 
+							current_attack_frame == 10 ? Maybe(^Hitbox)(&throw_hitbox) : Maybe(^Hitbox)(nil), 
 							nil,
 							}
 				}
@@ -2305,7 +2276,7 @@ apply_move_hitboxes :: proc (players:^[PlayerNumber]^PlayerData, hitbox_data:^Hi
 						hitboxes[p_num] = {
 							&stand_full_hurtbox, 
 							&punch_5P_hurtbox, 
-							current_attack_frame >= end_of_active_period ? MaybeHitboxPtr(nil) : MaybeHitboxPtr(&punch_5P_hitbox) ,
+							current_attack_frame >= end_of_active_period ? Maybe(^Hitbox)(nil) : Maybe(^Hitbox)(&punch_5P_hitbox) ,
 						}
 					}
 			case ._MOVE_FORWARD, ._MOVE_BACKWARD, ._IDLE_5: 
@@ -2317,7 +2288,7 @@ apply_move_hitboxes :: proc (players:^[PlayerNumber]^PlayerData, hitbox_data:^Hi
 							hitboxes[p_num] = {
 								&stand_6P_hurtbox,
 								&stand_6P_elbow_hurtbox, 
-								current_attack_frame == 14 || current_attack_frame == 15 ? MaybeHitboxPtr(&stand_6P_hitbox): MaybeHitboxPtr(nil),
+								current_attack_frame == 14 || current_attack_frame == 15 ? Maybe(^Hitbox)(&stand_6P_hitbox): Maybe(^Hitbox)(nil),
 							}
 				}
 			case ._IDLE_2:
@@ -2329,7 +2300,7 @@ apply_move_hitboxes :: proc (players:^[PlayerNumber]^PlayerData, hitbox_data:^Hi
 						hitboxes[p_num] = {
 							&crouch_hurtbox, 
 							&punch_2P_hurtbox, 
-							current_attack_frame >= end_of_active_period ? MaybeHitboxPtr(nil) : MaybeHitboxPtr(&punch_2P_hitbox),
+							current_attack_frame >= end_of_active_period ? Maybe(^Hitbox)(nil) : Maybe(^Hitbox)(&punch_2P_hitbox),
 						}
 	
 				}
@@ -2347,9 +2318,9 @@ resolve_hitboxes :: proc (players: ^[PlayerNumber]^PlayerData, hitbox_data:^Hitb
 	attack_hit = {.One = false, .Two = false}
 	attack_blocked = {.One = false, .Two = false}
 
-	actives:[PlayerNumber]MaybeHitboxPtr = { .One = nil, .Two = nil}
-	hurtboxes:[PlayerNumber][2]MaybeHitboxPtr = {.One = {nil, nil}, .Two = {nil, nil}}
-	blockboxes:[PlayerNumber]MaybeHitboxPtr = {.One = nil, .Two = nil}
+	actives:[PlayerNumber]Maybe(^Hitbox) = { .One = nil, .Two = nil}
+	hurtboxes:[PlayerNumber][2]Maybe(^Hitbox) = {.One = {nil, nil}, .Two = {nil, nil}}
+	blockboxes:[PlayerNumber]Maybe(^Hitbox) = {.One = nil, .Two = nil}
 
 	for player in players {
 		hurtbox_idx := 0
@@ -2478,54 +2449,6 @@ resolve_hitboxes :: proc (players: ^[PlayerNumber]^PlayerData, hitbox_data:^Hitb
 	return attack_hit, attack_blocked
 }
 
-
-
-draw_healthbars :: proc (health:[PlayerNumber]i8) {
-	w4.DRAW_COLORS^ = 2
-	w4.rect(30,27,42, 7)
-	w4.rect(42 + 9 + 40,27,42, 7)
-	
-	w4.DRAW_COLORS^ = 3
-	w4.rect(31+(5*i32(8 -health[.One])), 28, 5*u32(health[.One]), 5)
-
-
-	w4.DRAW_COLORS^ = 4
-	w4.rect(92, 28, 5*u32(health[.Two]), 5)
-
-	for lifebar, idx in health {
-		text_offset:i32 = idx == .One ? 0 : 86
-		text_offset += 21
-		w4.DRAW_COLORS^ = player_draw_colour(idx)
-		w4.text(idx == .One ? "P1" : "P2", 10 + text_offset, 36 )
-	}
-
-}
-
-draw_stage :: proc () {
-	w4.DRAW_COLORS^ = 2 
-	w4.line(30, 101, 30, 104)
-	w4.line(160-29, 101, 160-29, 104)
-	
-	w4.line(30, 105, 160-29, 105)
-
-	w4.line(30, 100, 30+11, 104-9)
-	w4.line(160-29, 100, (160-29)-11, 104-9)
-
-	w4.line(29+11, 104-9, (160-29)-11, 104-9)
-
-	w4.line(35, 101, 160-34, 101)
-}
-
-draw_round_markers :: proc (rounds_won:[PlayerNumber]u8) {
-	w4.DRAW_COLORS^ = 0x12
-	for i in 0..3 {
-		w4.DRAW_COLORS^ = int(rounds_won[.One]) < i+1 ?  0x12 : 0x23
-		w4.rect(68  - (i32(i) * 5), 36, 5, 5)
-		w4.DRAW_COLORS^ = int(rounds_won[.Two]) < i+1 ?  0x12 : 0x24
-		w4.rect(90  + (i32(i) * 5), 36, 5, 5)
-	}
-}
-
 log10 :: proc(value: int) -> (res: int) {
 	v := value
 	for v > 0 {
@@ -2585,23 +2508,6 @@ print_float :: proc(buffer: []u8, value: f64, precision: int = 3) -> (s: string)
     return string(buffer[:whole_size + fract_size])
 }
 
-draw_time :: proc (time:f64, health:[PlayerNumber]i8) {
-	time_buffer:[5]u8
-	f_text := print_float(time_buffer[:], time, 2)
-	w4.DRAW_COLORS^ = 0x02
-	_ts, _te : int
-	if(time < 10){
-		_ts = 2; _te = 4
-	} else {
-		_ts = 3; _te = 5
-	}
-	x_offset :i32 = 73
-	y_offset :i32 = 27
-	w4.text(string(time_buffer[_ts:_te]), x_offset + 1,y_offset)
-	w4.DRAW_COLORS^ = health[.Two] > health[.One] ? 0x04 : 0x03
-	w4.text(string(time_buffer[0:2]), x_offset + (time < 10 ? 5 : 0),y_offset)
-
-}
 
 VictoryType :: enum {
 	_Knockout,
@@ -2798,10 +2704,72 @@ update :: proc "c" () {
 			return
 		}
 	}
-
+	draw_stage :: proc () {
+		w4.DRAW_COLORS^ = 2 
+		w4.line(30, 101, 30, 104)
+		w4.line(160-29, 101, 160-29, 104)
+		
+		w4.line(30, 105, 160-29, 105)
+	
+		w4.line(30, 100, 30+11, 104-9)
+		w4.line(160-29, 100, (160-29)-11, 104-9)
+	
+		w4.line(29+11, 104-9, (160-29)-11, 104-9)
+	
+		w4.line(35, 101, 160-34, 101)
+	}
 	draw_stage()
+
+	draw_healthbars :: proc (health:[PlayerNumber]i8) {
+		w4.DRAW_COLORS^ = 2
+		w4.rect(30,27,42, 7)
+		w4.rect(42 + 9 + 40,27,42, 7)
+		
+		w4.DRAW_COLORS^ = 3
+		w4.rect(31+(5*i32(8 -health[.One])), 28, 5*u32(health[.One]), 5)
+	
+	
+		w4.DRAW_COLORS^ = 4
+		w4.rect(92, 28, 5*u32(health[.Two]), 5)
+	
+		for lifebar, idx in health {
+			text_offset:i32 = idx == .One ? 0 : 86
+			text_offset += 21
+			w4.DRAW_COLORS^ = player_draw_colour(idx)
+			w4.text(idx == .One ? "P1" : "P2", 10 + text_offset, 36 )
+		}
+	
+	}
 	draw_healthbars(health)
+
+	draw_round_markers :: proc (rounds_won:[PlayerNumber]u8) {
+		w4.DRAW_COLORS^ = 0x12
+		for i in 0..3 {
+			w4.DRAW_COLORS^ = int(rounds_won[.One]) < i+1 ?  0x12 : 0x23
+			w4.rect(68  - (i32(i) * 5), 36, 5, 5)
+			w4.DRAW_COLORS^ = int(rounds_won[.Two]) < i+1 ?  0x12 : 0x24
+			w4.rect(90  + (i32(i) * 5), 36, 5, 5)
+		}
+	}
 	draw_round_markers(rounds_won)
+
+	draw_time :: proc (time:f64, health:[PlayerNumber]i8) {
+		time_buffer:[5]u8
+		f_text := print_float(time_buffer[:], time, 2)
+		w4.DRAW_COLORS^ = 0x02
+		_ts, _te : int
+		if(time < 10){
+			_ts = 2; _te = 4
+		} else {
+			_ts = 3; _te = 5
+		}
+		x_offset :i32 = 73
+		y_offset :i32 = 27
+		w4.text(string(time_buffer[_ts:_te]), x_offset + 1,y_offset)
+		w4.DRAW_COLORS^ = health[.Two] > health[.One] ? 0x04 : 0x03
+		w4.text(string(time_buffer[0:2]), x_offset + (time < 10 ? 5 : 0),y_offset)
+	}
+	
 	draw_time(time, health)
 	if(victory_type != ._None){
 		victory_text:string
@@ -2902,7 +2870,6 @@ update :: proc "c" () {
 	}
 
 	apply_suffering_attack(&player_ptrs, &accel_data)
-	//Everything above is pretty good
 	apply_move_acceleration(&player_ptrs, &accel_data)
 	apply_move_hitboxes(&player_ptrs, &hitbox_data)
 
