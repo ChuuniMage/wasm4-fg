@@ -1181,8 +1181,8 @@ do_animation :: proc (using player:^PlayerData,
 	w4.DRAW_COLORS^ = p_num == PlayerNumber.One ? 0x30 : 0x40
 	using player.current_anim
 
-	counter += 1;
 	anim_threshold := anim_durations[idx]
+	counter += 1;
 
 	if (counter >= anim_threshold){
 		counter = 0
@@ -1747,9 +1747,22 @@ update_players_with_hit_resolution :: proc (
 	attack_blocked: [PlayerNumber]bool, 
 	health:^[PlayerNumber]i8,
 	rounds_won:^[PlayerNumber]u8,
-	player_dead:^bool,
 	victory_type:^VictoryType, time:f64){
 	
+	for player in players {
+		if (p1_data.state != ._ThrowBreaking){continue}
+		throw_data := attack_array[._5Throw]
+		using throw_data
+		full_attack_length := startup + active + recovery
+		active_period := startup + active
+		current_attack_frame := full_attack_length - player.current_anim.anim_duration 
+		player.current_anim.anim_duration = recovery 
+		player.current_anim.counter = 0
+		player.current_anim.idx = 0
+		player.state = ._Recovery
+		player.suffering_attack = nil
+	}
+
 	get_blockstun_type := proc (atk:AttackDetails, target_player:^PlayerData) -> BlockstunType {
 		using target_player
 		return stance == .Crouching || stance == .Crouch_to_Stand_Transition ? atk.crouch_blockstun_type : atk.stand_blockstun_type
@@ -1840,7 +1853,6 @@ update_players_with_hit_resolution :: proc (
 			opposing_pnum:PlayerNumber= p_num == .One ? .Two : .One
 			if(players[opposing_pnum].state == ._Dead){
 				rounds_won[p_num] += 1; victory_type^ = ._Knockout; 
-				player_dead^ = true
 				players[opposing_pnum].current_move = ._IDLE_5
 				players[opposing_pnum].buffered_move = ._IDLE_5
 			}
@@ -2692,39 +2704,38 @@ update :: proc "c" () {
 
 	@static win_count := [PlayerNumber]f64{ .One = 0, .Two = 0}
 	@static player_ready:= [PlayerNumber]bool {.One = false, .Two = false}
-	@static victory_type :VictoryType = ._None
 	@static health := [PlayerNumber]i8{.One = 8, .Two = 8}
+	@static rounds_won := [PlayerNumber]u8{.One = 0, .Two = 0}
 	input_ptrs := [PlayerNumber]^[3]FG_Notation{ .One = &fg_input_1, .Two = &fg_input_2}
 	player_ptrs := [PlayerNumber]^PlayerData{.One = &p1_data, .Two = &p2_data}
 
-	@static rounds_won := [PlayerNumber]u8{.One = 0, .Two = 0}
+	@static victory_type :VictoryType = ._None
 	@static time := 15.00
 
-	@static game_start:= false
+	GAME_START_THRESHOLD :: 90
 	@static game_start_counter:= 0
-	game_start_threshold := 90
 
-	if(!game_start){
+	if game_start_counter < GAME_START_THRESHOLD{
 		for colour, idx in w4.PALETTE {
 			colour = DefaultPalette[idx]
 		}
 
 		if player_ready[.One] && player_ready[.Two] {
 			game_start_counter+= 1
-			if game_start_counter == game_start_threshold {game_start = true; rounds_won = {.One = 0, .Two = 0};game_start_counter = 0}
+			if game_start_counter == GAME_START_THRESHOLD {rounds_won = {.One = 0, .Two = 0}}
 		}
 		w4.DRAW_COLORS^ = 0x2
 		w4.rect(30, 103, 100, 50)
-		w4.DRAW_COLORS^ = 0x21 
 		w4.DRAW_COLORS^ = 0x31
-		w4.text("P1 wins:", 40- 4, 106 )
-		w4.text("000", 120 - 16- 4, 106 )
 		string_buf:[3]u8
-		w4.text(print_float(string_buf[:], win_count[.One], 0), 120 - i32(((log10(int(win_count[.One]))) - 1) * 8) - 4, 106)
-		w4.DRAW_COLORS^ = 0x41
-		w4.text("P2 wins:", 40- 4, 114 )
-		w4.text("000", 120 - 16- 4, 114 )
-		w4.text(print_float(string_buf[:], win_count[.Two], 0), 120 - i32(((log10(int(win_count[.Two])))- 1) * 8) - 4, 114)
+		for count, pnum in win_count {
+			w4.DRAW_COLORS^ = pnum == .One ? 0x31 : 0x41
+			str := pnum == .One ? "P1 wins:" : "P2 wins:"
+			y_pos :i32= pnum == .One ? 106 : 114
+			w4.text(str, 40 - 4, y_pos )
+			w4.text("000", 120 - 16 - 4, y_pos )
+			w4.text(print_float(string_buf[:], win_count[pnum], 0), 120 - i32(((log10(int(win_count[pnum]))) - 1) * 8) - 4, y_pos)
+		}
 		w4.DRAW_COLORS^ = 0x21 
 		w4.text(
 			win_count[.One] == 0 && win_count[.Two] == 0 ? "Start?": "Rematch?", 
@@ -2741,36 +2752,34 @@ update :: proc "c" () {
 			w4.text(ready ? "Yes" : "No", idx == .One ? 40 : 80, 140)
 			w4.DRAW_COLORS^ = idx == .One ? 0x33 : 0x44
 			w4.oval(idx == .One ? 66 : 106, 140, 6, 6)
-			controller := idx == .One ? w4.GAMEPAD1^ : w4.GAMEPAD2^
-			if .A in controller {
+			if .A in (idx == .One ? w4.GAMEPAD1^ : w4.GAMEPAD2^) {
 				player_ready[idx] = true
 			}
 		}
 		return
 	}
 
-	@static round_start := false; round_start_threshold := 96; @static round_start_count := 0
-	go_text_threshold := 60; @static go_text_count := 0
+	@static round_start_count := 0
+	ROUND_START_THRESHOLD :: 96
 
-	switch(round_start){
-		case true:
-			if go_text_count < go_text_threshold {
+	@static go_text_count := 0
+	GO_TEXT_THRESHOLD :: 60
+
+	switch{
+		case round_start_count >= ROUND_START_THRESHOLD:
+			if go_text_count < GO_TEXT_THRESHOLD {
 				w4.text("Go!", 72, 52)
+				switch {
+					case go_text_count == 0 :  w4.tone(440*2, 5, 75, .Pulse1)
+					case go_text_count == 5 :  w4.tone(659*2, 15| (7 << 8), 75 , .Pulse1)
+				}
 				go_text_count += 1
-		
-				if go_text_count == 5 do w4.tone(659*2, 15| (7 << 8), 75 , .Pulse1)
-				
 			}
-		case false:
+		case :
 			w4.text("Ready?", 55, 52)
 			round_start_count +=1
 			w4.DRAW_COLORS^ = round_start_count < 68 ? 0x2 : 0x3
 			w4.rect(55, 61, 1 * u32((round_start_count / 2)), 1)
-			if round_start_count == round_start_threshold {
-				round_start = true
-				round_start_count = 0
-				w4.tone(440*2, 5, 75, .Pulse1)
-			}
 	}
 
 
@@ -2781,14 +2790,12 @@ update :: proc "c" () {
 		health = {.One = 8, .Two = 8}
 		time = 15.00
 		death_counter = 0
-		player_dead = false
 		victory_type = ._None
-		round_start = false; round_start_count = 0; go_text_count = 0
+		round_start_count = 0; go_text_count = 0
 	}
 
-	@static player_dead := false
+	DEATH_THRESHOLD :: 155
 	@static death_counter := 0
-	death_threshold := 155
 
 
 	if (p1_data.state == ._Dead || p1_data.state == ._RingOut || p2_data.state == ._Dead || p2_data.state == ._RingOut || time <= 0){
@@ -2801,87 +2808,83 @@ update :: proc "c" () {
 	NOTE_D :: 587
 	NOTE_G :: 392
 
-	if (rounds_won[.One] >= 4 || rounds_won[.Two] >= 4) && death_counter >= death_threshold  {
+	if (rounds_won[.One] >= 4 || rounds_won[.Two] >= 4) && death_counter >= DEATH_THRESHOLD  {
 		for count, pnum in rounds_won {
 			@static update_wins_counter := 0
-			update_wins_threshold := 170
-			if count == 4 {
-				for colour, idx in w4.PALETTE {
-					colour = DefaultPalette[idx]
-				}
-		
-				opposing_pnum:PlayerNumber= pnum == .One ? .Two : .One
-				str:= rounds_won[opposing_pnum] == 4 ? "Draw!" : (pnum == .One ? "P1 wins!" : "P2 wins!")
-
-
-				@static flip_win_sprite := false
-				player_blit:w4.Blit_Flags = flip_win_sprite ? {.FLIPX} : nil
-				if !(rounds_won[.One] >= 4 && rounds_won[.Two] >= 4){
-	
-					if update_wins_counter % 20 == 0 {flip_win_sprite = !flip_win_sprite}
-					w4.DRAW_COLORS^ = 0x30
-					w4.blit(cast(^u8)&elbow_1[0], 70, 90, 16, 32, player_blit)
-					w4.blit(cast(^u8)&elbow_1_extra[0], i32(70 - (flip_win_sprite == false ? 5 : -16)), i32(90 + 23), 5, 9, player_blit)
-					p1_won := rounds_won[.One] >= 4
-
-					w4.DRAW_COLORS^ = 0x40
-					w4.blit(cast(^u8)&hitstun_stand_low[0], p1_won ? 90 : 50, 100, 16, 32, p1_won ? {.FLIPX} : nil)
-				}
-				@static draw_y_offset :i32 = 0
-				if(rounds_won[.One] >= 4 && rounds_won[.Two] >= 4) {
-					w4.DRAW_COLORS^ = 0x30
-
-					switch{
-						case update_wins_counter > 100: 
-						  	draw_y_offset += 2
-							if update_wins_counter % 2 == 0 {flip_win_sprite = !flip_win_sprite}
-						case update_wins_counter > 50: 
-							draw_y_offset += 1
-							if update_wins_counter % 3 == 0 {flip_win_sprite = !flip_win_sprite}
-						case :
-							if update_wins_counter % 4 == 0 {flip_win_sprite = !flip_win_sprite}
-					}
-					w4.blit(cast(^u8)&throw_hit[0], 50, 90 - draw_y_offset, 16, 32, flip_win_sprite ? {.FLIPX} :nil)
-					w4.blit(cast(^u8)&throw_hit[0], 90, 90 - draw_y_offset, 16, 32, flip_win_sprite ? nil : {.FLIPX})
-					
-				}
-
-
-				w4.DRAW_COLORS^ = 4
-				w4.rect(26, 46, 108, 38)
-				w4.DRAW_COLORS^ = 3
-				w4.rect(28, 48, 104, 34)
-				w4.DRAW_COLORS^ = 2
-				w4.rect(30, 50, 100, 30)
-				w4.DRAW_COLORS^ = 1 
-				w4.text(str, rounds_won[opposing_pnum] == 4 ? 60 : 50, 60)
-				switch(update_wins_counter){
-					case 0: w4.tone(NOTE_A, 20, 75, .Pulse1)
-					case 20: w4.tone(NOTE_C, 20, 75, .Pulse1)
-					case 40: w4.tone(NOTE_E, 10, 75, .Pulse1)
-					case 50: w4.tone(NOTE_D, 20, 75, .Pulse1)
-					case 70:  w4.tone(NOTE_A, 19, 75, .Pulse1)
-					case 90: w4.tone(NOTE_A, 9, 75, .Pulse1)
-					case 100: w4.tone(NOTE_A, 10, 75, .Pulse1)
-					case 110: w4.tone(NOTE_G, 10, 75, .Pulse1)
-					case 120: w4.tone(NOTE_A, 30, 75, .Pulse1)
-
-				}
-				if update_wins_counter == update_wins_threshold {
-					if rounds_won[opposing_pnum] == 4 {win_count[opposing_pnum] += 1 }
-					win_count[pnum] += 1
-					game_start = false
-					player_ready = [PlayerNumber]bool {.One = false, .Two = false}
-					re_init_round(player_ptrs)
-					flip_win_sprite = false
-					draw_y_offset = 0
-				}
-				update_wins_counter = update_wins_counter == update_wins_threshold ? 0 : update_wins_counter + 1
-				return
+			UPDATE_WINS_THRESHOLD :: 170
+			if count != 4 {continue}
+			for colour, idx in w4.PALETTE {
+				colour = DefaultPalette[idx]
 			}
+	
+			opposing_pnum:PlayerNumber= pnum == .One ? .Two : .One
+			str:= rounds_won[opposing_pnum] == 4 ? "Draw!" : (pnum == .One ? "P1 wins!" : "P2 wins!")
+
+			@static flip_win_sprite := false
+			player_blit:w4.Blit_Flags = flip_win_sprite ? {.FLIPX} : nil
+			if !(rounds_won[.One] >= 4 && rounds_won[.Two] >= 4){
+				if update_wins_counter % 20 == 0 {flip_win_sprite = !flip_win_sprite}
+				w4.DRAW_COLORS^ = 0x30
+				w4.blit(cast(^u8)&elbow_1[0], 70, 90, 16, 32, player_blit)
+				w4.blit(cast(^u8)&elbow_1_extra[0], i32(70 - (flip_win_sprite == false ? 5 : -16)), i32(90 + 23), 5, 9, player_blit)
+				p1_won := rounds_won[.One] >= 4
+
+				w4.DRAW_COLORS^ = 0x40
+				w4.blit(cast(^u8)&hitstun_stand_low[0], p1_won ? 90 : 50, 100, 16, 32, p1_won ? {.FLIPX} : nil)
+			}
+
+			@static draw_y_offset :i32 = 0
+			if rounds_won[.One] >= 4 && rounds_won[.Two] >= 4 {
+				w4.DRAW_COLORS^ = 0x30
+
+				switch{
+					case update_wins_counter > 100: 
+						draw_y_offset += 2
+						if update_wins_counter % 2 == 0 {flip_win_sprite = !flip_win_sprite}
+					case update_wins_counter > 50: 
+						draw_y_offset += 1
+						if update_wins_counter % 3 == 0 {flip_win_sprite = !flip_win_sprite}
+					case :
+						if update_wins_counter % 4 == 0 {flip_win_sprite = !flip_win_sprite}
+				}
+				w4.blit(cast(^u8)&throw_hit[0], 50, 90 - draw_y_offset, 16, 32, flip_win_sprite ? {.FLIPX} :nil)
+				w4.blit(cast(^u8)&throw_hit[0], 90, 90 - draw_y_offset, 16, 32, flip_win_sprite ? nil : {.FLIPX})
+				
+			}
+
+			w4.DRAW_COLORS^ = 4
+			w4.rect(26, 46, 108, 38)
+			w4.DRAW_COLORS^ = 3
+			w4.rect(28, 48, 104, 34)
+			w4.DRAW_COLORS^ = 2
+			w4.rect(30, 50, 100, 30)
+			w4.DRAW_COLORS^ = 1 
+			w4.text(str, rounds_won[opposing_pnum] == 4 ? 60 : 50, 60)
+			switch(update_wins_counter){
+				case 0: w4.tone(NOTE_A, 20, 75, .Pulse1)
+				case 20: w4.tone(NOTE_C, 20, 75, .Pulse1)
+				case 40: w4.tone(NOTE_E, 10, 75, .Pulse1)
+				case 50: w4.tone(NOTE_D, 20, 75, .Pulse1)
+				case 70:  w4.tone(NOTE_A, 19, 75, .Pulse1)
+				case 90: w4.tone(NOTE_A, 9, 75, .Pulse1)
+				case 100: w4.tone(NOTE_A, 10, 75, .Pulse1)
+				case 110: w4.tone(NOTE_G, 10, 75, .Pulse1)
+				case 120: w4.tone(NOTE_A, 30, 75, .Pulse1)
+
+			}
+			if update_wins_counter == UPDATE_WINS_THRESHOLD {
+				if rounds_won[opposing_pnum] == 4 {win_count[opposing_pnum] += 1 }
+				win_count[pnum] += 1
+				game_start_counter = 0
+				player_ready = [PlayerNumber]bool {.One = false, .Two = false}
+				re_init_round(player_ptrs)
+				flip_win_sprite = false
+				draw_y_offset = 0
+			}
+			update_wins_counter = update_wins_counter == UPDATE_WINS_THRESHOLD ? 0 : update_wins_counter + 1
+			return
 		}
 	}
-
 
 	draw_stage()
 	draw_healthbars(health)
@@ -2910,7 +2913,6 @@ update :: proc "c" () {
 		w4.text(player_wins_text,!p1_wins && !p2_wins || p1_wins && p2_wins ? 62: 52,56)
 	}
 
-
 	hitbox_data:HitboxData = {{.One = {nil, nil, nil}, .Two = {nil, nil, nil}}}
 
 	@static accel_data:AccelerationData = {
@@ -2918,19 +2920,16 @@ update :: proc "c" () {
 		false,
 	}
 
-
-
 	//CHECK FOR KILL: TIME OUT
 	if time <= 0 {
 		time = 0;
-		if(player_dead == false){
+		if(victory_type == ._None){
 			if health[.One] >= health[.Two]{
 				rounds_won[.One] += 1
 			}
 			if health[.One] <= health[.Two]{
 				rounds_won[.Two] += 1
 			}
-			player_dead = true
 			victory_type = ._Timeout
 		}
 	}
@@ -2961,7 +2960,6 @@ update :: proc "c" () {
 			current_anim.counter = 0
 			current_anim.anim_duration = 175
 			rounds_won[opposing_pnum] += 1
-			player_dead = true
 			current_move = ._IDLE_5
 			buffered_move = ._IDLE_5
 			suffering_attack = nil
@@ -2970,16 +2968,14 @@ update :: proc "c" () {
 		}
 	}
 
-	if(death_counter >= death_threshold){
+	if(death_counter >= DEATH_THRESHOLD){
 		re_init_round(player_ptrs)
 	}
 
 
-
 	for player in player_ptrs {
-		if round_start == false {continue}
-		if(player.state == ._Dead || player.state == ._RingOut){continue}
-		if player.p_num == .One {time -= .0167}
+		if round_start_count < ROUND_START_THRESHOLD || player.state == ._Dead || player.state == ._RingOut {continue}
+
 		using player
 		playerGamepad := player.p_num == .One ? w4.GAMEPAD1^ : w4.GAMEPAD2^
 		buttons_to_fg_notation_set(playerGamepad, input_ptrs[p_num], p_num)
@@ -2990,7 +2986,7 @@ update :: proc "c" () {
 		if(player.state == ._Idle){
 			update_idle_player_with_move(player)
 		}
-		
+		if player.p_num == .Two {time -= .0167}
 	}
 
 	apply_suffering_attack(&player_ptrs, &accel_data)
@@ -3013,32 +3009,17 @@ update :: proc "c" () {
 		for x in attack_blocked {if x == true {impact = true}}
 
 		if(impact){
-			update_players_with_hit_resolution(player_ptrs, attack_hit, attack_blocked, &health, &rounds_won, &player_dead, &victory_type, time)
+			update_players_with_hit_resolution(player_ptrs, attack_hit, attack_blocked, &health, &rounds_won, &victory_type, time)
 			disable_hitboxes_threshold = p1_data.suffering_attack == nil ? attack_array[p1_data.current_move].active : attack_array[p2_data.current_move].active 
 			disable_hitboxes_threshold += 5
-			if (p1_data.state == ._ThrowBreaking){
-				for player in player_ptrs {
-					throw_data := attack_array[._5Throw]
-					using throw_data
-					full_attack_length := startup + active + recovery
-					active_period := startup + active
-					current_attack_frame := full_attack_length - player.current_anim.anim_duration 
-					player.current_anim.anim_duration = recovery 
-					player.current_anim.counter = 0
-					player.current_anim.idx = 0
-					player.state = ._Recovery
-					player.suffering_attack = nil
-				}
-			}
+	
 			for player in player_ptrs {
-				using player
-				opposing_pnum :PlayerNumber = p_num == .One ? .Two : .One
+				opposing_pnum :PlayerNumber = player.p_num == .One ? .Two : .One
 				if attack_blocked[player.p_num] {accel_data.accel[opposing_pnum] -= 2}
 			}
 		} 
-
-
 	}
+
 	advance_animation(player_ptrs)
 	resolve_accel(&player_ptrs, &accel_data)
 
